@@ -15,6 +15,8 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
 void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *font);
 void putfont8_string(char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, char * string);
 
+void init_pic(void);
+
 extern struct bitmap_font font;
 
 #define COL8_000000     0
