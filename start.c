@@ -101,6 +101,7 @@ void kernelstart(char *arg)
 
     //putfont8(vram, xsize,  8, 8, COL8_FFFFFF, font.Bitmap + ('A' - 31) * 16);
 //    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hypervisor 2.1 Safety profile!!!");
+    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "LINX-INFO !!!");
     //char buf[10];
     //sprintf(buf,"%d",vram);
     //putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , buf);
