@@ -1,0 +1,21 @@
+
+
+SUBDIRS ?= 
+
+
+ifneq ($(TARGET),clean)
+
+all: $(SUBDIRS)
+
+$(SUBDIRS)::
+	$(MAKE) -C $@
+else
+
+rclean: $(SUBDIRS) clean
+
+$(SUBDIRS)::
+	$(MAKE) -C $@ clean
+
+clean:
+
+endif
