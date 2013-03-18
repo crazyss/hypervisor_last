@@ -17,6 +17,8 @@ SECTIONS
             mouse.o(.text*)
             int_entry.o(.text*)
             font.o(.rodata*)
+            lib.o(.*)
+            int.o(.*)
         }
 
 }

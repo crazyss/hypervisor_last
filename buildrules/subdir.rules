@@ -1,4 +1,4 @@
-
+include $(TOPDIR)/buildrules/builder.rules
 
 SUBDIRS ?= 
 

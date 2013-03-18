@@ -3,6 +3,7 @@
 include ../buildrules/subdir.rules
 
 
+
 BSP ?= x86
 
 
@@ -12,7 +13,6 @@ CFLAGS = -m32 -I../include
 COBJS = start.o font.o mouse.o int.o
 SOBJS = int_entry.o
 
-OBJS = $(COBJS) $(SOBJS)
 
 
 ######################################
@@ -20,5 +20,5 @@ OBJS = $(COBJS) $(SOBJS)
 all: $(COBJS) $(SOBJS)
 
 clean:
-	$(RM) $(OBJS)
+	$(RM) $(COBJS) $(SOBJS)
 

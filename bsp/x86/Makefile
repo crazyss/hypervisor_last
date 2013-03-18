@@ -1,5 +1,4 @@
-#COBJS = main.o
-
+include $(TOPDIR)/buildrules/builder.rules
 
 
 ASFLAGS = --32 -march=i486 -mtune=i486
