@@ -21,26 +21,11 @@ SOBJS += dummy.o
 COBJS = start.o font.o mouse.o
 
 
-#
-# compiler rule
-#
-%.o: %.c
-	$(CC) $(CC_ARCH_SPEC) $(CFLAGS_OPTIONS_ALL) -c -o $(OBJDIR)/$@ $<
-
-#
-# assembler rule
-#
-%.o: %.s
-	$(AS) $(CC_ARCH_SPEC) $(CFLAGS_OPTIONS_ALL) -c -o $(OBJDIR)/$@ $<
-
-
 
 
 
 
 all: $(OBJDIR) $(SUBDIRS)
-	@echo $(wildcard *lib)
-	@echo $(wildcard $(OBJDIR)/*.o)
 
 $(OBJDIR):
 	$(MKDIR) -p $(OBJDIR)
@@ -69,6 +54,4 @@ include buildrules/linker.rules
 .PHONY: clean
 
 clean: 
-	$(MAKE) TARGET=clean $(SUBDIRS)
-	$(RM) -r obj
-	#$(RM) -f boot.img helloos $(SOBJS) $(COBJS) helloos.bin
+	@$(RM) -r obj

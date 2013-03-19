@@ -2,20 +2,10 @@ include $(TOPDIR)/buildrules/builder.rules
 
 SUBDIRS ?= 
 
+OBJS = $(addprefix $(OBJDIR)/, $(COBJS) $(SOBJS))
 
-ifneq ($(TARGET),clean)
-
-all: $(SUBDIRS)
+all: $(SUBDIRS) $(OBJS)
 
 $(SUBDIRS)::
 	$(MAKE) -C $@
-else
 
-rclean: $(SUBDIRS) clean
-
-$(SUBDIRS)::
-	$(MAKE) -C $@ clean
-
-clean:
-
-endif
