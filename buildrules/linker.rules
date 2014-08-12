@@ -12,6 +12,7 @@ dump: $(OBJDIR)/helloos.bin
 $(OBJDIR)/boot.img: $(OBJDIR)/helloos.bin
 	dd if=$< of=$@ bs=512 count=1024
 run.x86: $(OBJDIR)/boot.img
+	kvm -fda $< -net none -no-kvm
+run.x86.debug: $(OBJDIR)/boot.img
 	kvm -d cpu -fda $< -net none -no-kvm
-
 
