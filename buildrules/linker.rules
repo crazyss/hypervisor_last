@@ -15,4 +15,6 @@ run.x86: $(OBJDIR)/boot.img
 	kvm -fda $< -net none -no-kvm
 run.x86.debug: $(OBJDIR)/boot.img
 	kvm -d cpu -fda $< -net none -no-kvm
+run.x86.libvirt: $(OBJDIR)/boot.img
+	virt-install --name kos --ram 64 --disk $<,device=floppy,format=raw --boot hd --arch i386
 
