@@ -1,14 +1,14 @@
-
 #
 # compiler rule
 #
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $(OBJDIR)/$@ $<
+$(OBJDIR)/%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 #
 # assembler rule
 #
-%.o: %.s
-	$(AS) $(ASFLAGS) -o $(OBJDIR)/$@ $<
+$(OBJDIR)/%.o: %.s
+	$(AS) $(ASFLAGS) -o $@ $<
+
 
 
