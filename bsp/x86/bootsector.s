@@ -1,11 +1,13 @@
 CYLS = 10
-BOOTSEG = 0x0
-.global debug
+BOOTSEG =   0x07C0
+INITSEG =   0x9000
+SYSSEG  =   0x1000
 .code16
-.section .data
+.section ".bstext", "ax"
 start:
 #.byte 0xeb,0x4e,0x90
-jmp main_start
+ljmp $BOOTSEG, $main_start
+#jmp main_start
 .ascii "HELLOIPL"
 .word 512
 .byte 1
@@ -45,13 +47,14 @@ myvar:
 #    movl $msg,%esi
 #  this statments not normal work.
 
-
 main_start:
-    movl $0,%eax
-    movl $0x7c00,%esp
-    mov %ax,%ss
-    mov %ax,%ds
-    mov %ax,%es
+	movw	%cs, %ax
+	movw	%ax, %ds
+	movw	%ax, %es
+	movw	%ax, %ss
+	xorw	%sp, %sp
+
+
 #
 #    je fin
 #
@@ -104,30 +107,32 @@ loadmsg:
 
 
 
-    movw $msg,%si
-putloop:
-    lodsb
-    cmp $0,%al
-    je read_disk
-    movb $0x0e, %ah
-    int $0x10
-    jmp putloop
     
-
 read_disk:
+##move BootSector to 0x9000(INITSEG)
+#    movw $BOOTSEG, %ax
+#    movw %ax,   %ds
+#    movw $INITSEG, %ax
+#    movw %ax,   %es
+#    movw $256,  %cx
+#    xorw %si,   %si
+#    xorw %di,   %di
+#    rep; movsw
+#    
+#
 #read disk to ram
-    movw $0x07e0,%ax
+    movw $INITSEG, %ax
     movw %ax,%es
     movb $0, %ch #cylinder
     movb $0, %dh #header
-    movb $2, %cl #sector
+    movb $1, %cl #sector
 
 
 readloop:
     mov $0,%si #record error times
 retry:
     movb $2, %ah    #read operation
-    movb $8, %al    #a number of "sector moving" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    movb $1, %al    #a number of "sector moving" !.
     movw $0, %bx    #clear bx
     movb $0, %dl    #A driver
     int  $0x13      #bios
@@ -157,18 +162,26 @@ next:
     cmp $2,%dh
     jb readloop         #reading 2 header
 
-    movb $0,%dh         #reading 10 cylinders
+    movb $0,%dh         #reading 5 cylinders
     add $1,%ch
-    cmp $10,%ch
+    cmp $5,%ch
     jb readloop
 
 #
-    jmp fin
+##
+##
+    movw $msg,%si
+putloop:
+    lodsb
+    cmp $0,%al
+   # je read_disk
+    je fin
+    movb $0x0e, %ah
+    int $0x10
+    jmp putloop
+##
 #
 #
-#
-
-
 error:
     movw    $0,%ax          #restore ES register
     movw    %ax,%es
@@ -184,6 +197,10 @@ error:
     movb    $0x03,  %dl  #line
     int $0x10
 
+disk_error_loop:
+    hlt
+    jmp disk_error_loop
+
 debug:
     movw    $0,%ax          #restore ES register
     movw    %ax,%es
@@ -198,16 +215,21 @@ debug:
     movb    $0x10,  %dh  #cl
     movb    $0x03,  %dl  #line
     int $0x10
-
-
-
-
-
+#
+#
 fin:
-    jmp lowlevel_init
-    hlt
-    jmp fin
 
+#setting video mode
+#    mov $0x13,%al
+#    mov $0x00,%ah
+#    int $0x10
+#
+#
+#
+    ljmp $INITSEG, $lowlevel_init
+    hlt
+
+    jmp fin
 
 
 .byte 0,2,31,23,21,12,31,23

@@ -6,13 +6,13 @@ void init_gdtidt(void)
     struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_GDT;
     struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT;
     int i;
-#if 0
     /* GDT<82>Ì<8f><89><8a>ú<89>» */
     for (i = 0; i <= LIMIT_GDT / 8; i++) {
         set_segmdesc(gdt + i, 0, 0, 0);
     }
-    set_segmdesc(gdt + 1, 0xffffffff,   0x00000000, AR_DATA32_RW);
-    set_segmdesc(gdt + 2, LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER);
+    set_segmdesc(gdt + 2, 0xffffffff,   0x00009000, AR_CODE32_ER);
+    set_segmdesc(gdt + 3, LIMIT_BOTPAK, ADR_BOTPAK, AR_DATA32_RW);
+#if 1
     load_gdtr(LIMIT_GDT, ADR_GDT);
 #endif
 
@@ -22,10 +22,14 @@ void init_gdtidt(void)
     }
     load_idtr(LIMIT_IDT, ADR_IDT);
 
-    /* IDT<82>Ì<90>Ý<92>è */
+    
+
     set_gatedesc(idt + 0x21, (int) inthandler21, 2 * 8, AR_INTGATE32);
+#if 0
+    /* IDT<82>Ì<90>Ý<92>è */
     set_gatedesc(idt + 0x27, (int) inthandler27, 2 * 8, AR_INTGATE32);
     set_gatedesc(idt + 0x2c, (int) inthandler2c, 2 * 8, AR_INTGATE32);
+#endif
 
     return;
 }
@@ -69,7 +73,6 @@ void kernelstart(char *arg)
     char *mcursor[256];
     int mx,my;
 
-
     init_gdtidt();
     init_pic();
     io_sti();
@@ -101,7 +104,7 @@ void kernelstart(char *arg)
 
     //putfont8(vram, xsize,  8, 8, COL8_FFFFFF, font.Bitmap + ('A' - 31) * 16);
 //    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hypervisor 2.1 Safety profile!!!");
-    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "LINX-INFO !!!");
+    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 13!!!");
     //char buf[10];
     //sprintf(buf,"%d",vram);
     //putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , buf);
