@@ -3,12 +3,8 @@ OUTPUT_ARCH(i386)
 
 SECTIONS
 {
-        . = 0x7c00;
-        .data : { helloos.o(.data) }
-        .rodata : {
-            start.o(.rodata*)    
-        }
-
+        . = 0x0;
+        .bstext : { bootsector.o(.bstext) }
         .text :
         {
             lowlevel_init.o(.text*)    
@@ -20,6 +16,12 @@ SECTIONS
             lib.o(.*)
             int.o(.*)
         }
+        .rodata : {
+            start.o(.rodata*)    
+        }
+        .bss : {
+        }
+
 
 }
 

@@ -32,95 +32,95 @@ color:
 .byte 0x84,0x84,0x84
 
 
-#------------------------------------------------
+##------------------------------------------------
+##
+#set_video_mode_vbe_0x103:
+#    movw    $0x800, %ax
+#    movw    %ax,    %es
+#    movw    %ax,    %ds
+#    xorw    %di,    %di
 #
-set_video_mode_vbe_0x103:
-    movw    $0x800, %ax
-    movw    %ax,    %es
-    movw    %ax,    %ds
-    xorw    %di,    %di
-
-#check VBE support
-    movb    $0x4f,      %ah
-    movb    $0x00,      %al
-    int     $0x10
-
-    cmp     $0x004f,    %ax
-    jne     1f
-    movw    0x04(%di),  %ax
-    cmp     $0x0200,    %ax
-    jb      1f
-
-    movw    $0x103,     %cx
-    movb    $0x4f,      %ah
-    movb    $0x01,      %al
-    int $0x10
-
-    cmp     $0x00,  %ah
-    jne     1f
-    cmp     $0x4f,  %al
-    jne     1f
-    cmpb    $8,     0x19(%di)
-    jne     1f
-    cmpb    $4,     0x1b(%si)
-    jne     1f
-    movw    (%di),      %ax
-    andw    $0x0080,    %ax
-    jz      1f
-
-    #set VBE mode to 0x103
-    movw    $0x103,     %bx
-    addw    $0x4000,    %bx
-    movb    $0x4f,      %ah
-    movb    $0x02,      %al
-    int     $0x10
-
-    movw    $1,     %ax
-    ret
-
-1:  
-    movw    $0,     %ax
-    ret
-###############################################
-set_video_mode_0x13:
-    movb    $0,     %ah  #0x0  func
-    movb    $0x13,  %al     #display mode
-    int     $0x10
-    ret
-
-###############################################
-set_bg_color:
-    movw    $VIDEO_PALLETE_PORT,    %dx
-    movb    $BG_INDEX_COLOR,           %al
-    outb    %al,                    %dx
-    
-    movw    $COLOR_SELECTION_PORT,  %dx
-    movb    $0,                     %al
-    outb    %al,                    %dx
-    movb    $0,                     %al
-    outb    %al,                    %dx
-    movb    $25,                     %al
-    outb    %al,                    %dx
-    ret
-
-###############################################
-    
+##check VBE support
+#    movb    $0x4f,      %ah
+#    movb    $0x00,      %al
+#    int     $0x10
+#
+#    cmp     $0x004f,    %ax
+#    jne     1f
+#    movw    0x04(%di),  %ax
+#    cmp     $0x0200,    %ax
+#    jb      1f
+#
+#    movw    $0x103,     %cx
+#    movb    $0x4f,      %ah
+#    movb    $0x01,      %al
+#    int $0x10
+#
+#    cmp     $0x00,  %ah
+#    jne     1f
+#    cmp     $0x4f,  %al
+#    jne     1f
+#    cmpb    $8,     0x19(%di)
+#    jne     1f
+#    cmpb    $4,     0x1b(%si)
+#    jne     1f
+#    movw    (%di),      %ax
+#    andw    $0x0080,    %ax
+#    jz      1f
+#
+#    #set VBE mode to 0x103
+#    movw    $0x103,     %bx
+#    addw    $0x4000,    %bx
+#    movb    $0x4f,      %ah
+#    movb    $0x02,      %al
+#    int     $0x10
+#
+#    movw    $1,     %ax
+#    ret
+#
+#1:  
+#    movw    $0,     %ax
+#    ret
+################################################
+#set_video_mode_0x13:
+#    movb    $0,     %ah  #0x0  func
+#    movb    $0x13,  %al     #display mode
+#    int     $0x10
+#    ret
+#
+################################################
+#set_bg_color:
+#    movw    $VIDEO_PALLETE_PORT,    %dx
+#    movb    $BG_INDEX_COLOR,           %al
+#    outb    %al,                    %dx
+#    
+#    movw    $COLOR_SELECTION_PORT,  %dx
+#    movb    $0,                     %al
+#    outb    %al,                    %dx
+#    movb    $0,                     %al
+#    outb    %al,                    %dx
+#    movb    $25,                     %al
+#    outb    %al,                    %dx
+#    ret
+#
+################################################
+#    
 io_hlt:
     hlt
     ret
-
-###############################################
-clear_screen:
-    movb    $0x6, %ah
-    movb    $0,   %al
-    movb    $0,   %ch
-    movb    $0,   %cl
-    movb    $24,  %dh
-    movb    $79,  %dl
-    movb    $0x07,  %bh
-    int     $0x10
-    ret
-
+#
+################################################
+#clear_screen:
+#    movb    $0x6, %ah
+#    movb    $0,   %al
+#    movb    $0,   %ch
+#    movb    $0,   %cl
+#    movb    $24,  %dh
+#    movb    $79,  %dl
+#    movb    $0x07,  %bh
+#    int     $0x10
+#    ret
+#
 ###############################################
 _lowlevel_init:
 
@@ -128,9 +128,9 @@ _lowlevel_init:
 #    call clear_screen
 #setting video mode
 
-    mov $0x13,%al
-    mov $0x00,%ah
-    int $0x10
+#    mov $0x13,%al
+#    mov $0x00,%ah
+#    int $0x10
 
 #   call set_video_mode_vbe_0x103
 
@@ -191,6 +191,7 @@ X86_CR0_PE = 0x00000001 /* Protection Enable */
     orl $X86_CR0_PE, %eax
     movl    %eax, %cr0
 
+
 goto32:
     /* Flush the prefetch queue */
     ljmp $(8*2),$hypervisor
@@ -248,7 +249,7 @@ gdt:
      * - Flags  = 4kB Granularity, 32-bit
      */
     .word   0xffff      /* limit_low */
-    .word   0x0000      /* base_low */
+    .word   0x9000      /* base_low */
     .byte   0x00        /* base_middle */
     .byte   0x9a        /* access */
     .byte   0xcf        /* flags + limit_high */
