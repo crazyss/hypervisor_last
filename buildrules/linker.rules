@@ -14,7 +14,7 @@ $(OBJDIR)/boot.img: $(OBJDIR)/helloos.bin
 run.x86: $(OBJDIR)/boot.img
 	qemu-kvm -cpu 486 -fda $< -net none -no-kvm
 run.x86.debug: $(OBJDIR)/boot.img
-	qemu-kvm -d cpu -cpu 486 -fda $< -net none -no-kvm
+	qemu-kvm -cpu 486 -fda $< -net none -no-kvm -S -s -monitor stdio
 run.x86.libvirt: $(OBJDIR)/boot.img
 	virt-install --name kos --ram 64 --disk $<,device=floppy,format=raw --boot hd --arch i386
 
