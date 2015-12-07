@@ -17,7 +17,6 @@ hypervisor:
     movl    %eax, %ds
     movl    %eax, %gs
     movl    %eax, %es
-    movl    $INISEG, %eax
     movl    %eax, %ss
 
 
@@ -25,6 +24,9 @@ hypervisor:
     movl    $0xff00,  %esp
 #jump into the C
 
+wjn:
+    hlt
+    jmp wjn
     jmp     kernelstart
 
 #

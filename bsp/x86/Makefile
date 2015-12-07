@@ -1,6 +1,6 @@
 
-
-ASFLAGS = --32 -march=i386 -mtune=i386
+#Due to wbinvd not support by i386
+ASFLAGS = --32 -march=i486 -mtune=i486
 
 SOBJS += bootsector.o lowlevel_init.o begin.o 
 SOBJS += dummy.o
