@@ -24,9 +24,6 @@ hypervisor:
     movl    $0xff00,  %esp
 #jump into the C
 
-wjn:
-    hlt
-    jmp wjn
     jmp     kernelstart
 
 #

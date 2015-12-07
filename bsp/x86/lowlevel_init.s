@@ -32,7 +32,7 @@ color:
 .byte 0x84,0x84,0x84
 
 
-##------------------------------------------------
+#------------------------------------------------
 ##
 #set_video_mode_vbe_0x103:
 #    movw    $0x800, %ax
@@ -128,12 +128,12 @@ _lowlevel_init:
 
 
 #    call clear_screen
-#setting video mode
-
+##setting video mode
+#
 #    mov $0x13,%al
 #    mov $0x00,%ah
 #    int $0x10
-
+#
 #   call set_video_mode_vbe_0x103
 
 #    call set_bg_color

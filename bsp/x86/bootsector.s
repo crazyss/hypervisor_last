@@ -164,7 +164,7 @@ next:
 
     movb $0,%dh         #reading 5 cylinders
     add $1,%ch
-    cmp $5,%ch
+    cmp $3,%ch
     jb readloop
 
 #
@@ -220,11 +220,9 @@ debug:
 fin:
 
 #setting video mode
-#    mov $0x13,%al
-#    mov $0x00,%ah
-#    int $0x10
-#
-#
+    mov $0x13,%al
+    mov $0x00,%ah
+    int $0x10
 #
     ljmp $INITSEG, $lowlevel_init
     hlt
