@@ -123,6 +123,8 @@ io_hlt:
 #
 ###############################################
 _lowlevel_init:
+	movw	%cs, %ax
+	movw	%ax, %ds
 
 
 #    call clear_screen
@@ -174,16 +176,18 @@ _lowlevel_init:
 X86_CR0_NW = 0x20000000 /* Not Write-through */
 X86_CR0_CD = 0x40000000 /* Cache Disable */
 
+
 #porting from Uboot , Disable Cache and Not Write-through
     movl    %cr0, %eax
     orl $(X86_CR0_NW | X86_CR0_CD), %eax
     movl    %eax, %cr0
     wbinvd
 
-    lidt    idt_ptr
-    lgdt    gdt_ptr
+    lidtw    idt_ptr
+    lgdtw    gdt_ptr
     nop
     nop
+
 
 X86_CR0_PE = 0x00000001 /* Protection Enable */
     /* Now, we enter protected mode */
@@ -198,7 +202,7 @@ goto32:
 
     jmp fin
 
-
+INITSEG = 0x9000
 
 #entry
 #    jmp main
@@ -213,7 +217,7 @@ idt_ptr:
 
 gdt_ptr:
     .word   0x20        /* limit (32 bytes = 4 GDT entries) */
-    .long   gdt  /* base */
+    .long   gdt + (INITSEG * 16) /* base */
 
 gdt:
     /*
@@ -264,9 +268,10 @@ gdt:
      * - Flags  = 4kB Granularity, 32-bit
      */
     .word   0xffff      /* limit_low */
-    .word   0x0000      /* base_low */
+    .word   0x9000      /* base_low */
     .byte   0x00        /* base_middle */
-    .byte   0x92        /* access */
+    #.byte   0x92        /* access */
+    .byte   0x9a        /* access */
     .byte   0xcf        /* flags + limit_high */
     .byte   0x00        /* base_high */
 
