@@ -10,18 +10,18 @@ memcpy:
     jnz memcpy
     ret
 
-INISEG = 0x9000
 hypervisor:
     movl    $(3 * 8), %eax
     movl    %eax, %fs
     movl    %eax, %ds
     movl    %eax, %gs
     movl    %eax, %es
+    movl    $(4 * 8), %eax
     movl    %eax, %ss
 
 
 #init stack
-    movl    $0xff00,  %esp
+    movl    $0x0000,  %esp
 #jump into the C
 
     jmp     kernelstart
