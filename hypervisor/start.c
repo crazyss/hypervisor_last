@@ -5,7 +5,7 @@
 void init_gdtidt(void)
 {
     struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_GDT;
-    struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT;
+    struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT - (SYSSEG << 4);
     int i;
 #if 0
     /* GDT<82>Ì<8f><89><8a>ú<89>» */
