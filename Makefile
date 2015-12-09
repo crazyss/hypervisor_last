@@ -17,7 +17,7 @@ ASFLAGS = --32 -march=i486 -mtune=i486
 #LDFLAGS = -T $(LDSCRITP) --print-map -N 
 
 SOBJS = helloos.o lowlevel_init.o begin.o lib.o int_entry.o
-SOBJS += dummy.o
+#SOBJS += dummy.o
 COBJS = start.o font.o mouse.o
 
 

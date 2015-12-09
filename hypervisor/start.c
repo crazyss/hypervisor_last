@@ -6,13 +6,13 @@ void init_gdtidt(void)
     struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_GDT;
     struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT;
     int i;
+#if 0
     /* GDT<82>Ì<8f><89><8a>ú<89>» */
     for (i = 0; i <= LIMIT_GDT / 8; i++) {
         set_segmdesc(gdt + i, 0, 0, 0);
     }
     set_segmdesc(gdt + 2, 0xffffffff,   0x00009000, AR_CODE32_ER);
     set_segmdesc(gdt + 3, LIMIT_BOTPAK, ADR_BOTPAK, AR_DATA32_RW);
-#if 1
     load_gdtr(LIMIT_GDT, ADR_GDT);
 #endif
 
@@ -63,9 +63,16 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar)
 
 void kernelstart(char *arg)
 {
+    while(1)
+        io_hlt();
+
 
     init_palette();
     char *vram = (char *)0xa0000;
+    int i;
+    for (i=0;i<0xFFF;i++) {
+        *vram=i&0xFF;
+    }
     unsigned short xsize,ysize;
     xsize=320;
     ysize=200;

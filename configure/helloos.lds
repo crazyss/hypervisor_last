@@ -3,23 +3,24 @@ OUTPUT_ARCH(i386)
 
 SECTIONS
 {
-        . = 0x0;
+        . = 0x0000;
         .bstext : { bootsector.o(.bstext) }
+        .inittext : { lowlevel_init.o(.inittext) }
         .text :
         {
-            lowlevel_init.o(.text*)    
             begin.o(.text*)
             start.o(.text*)
+            start.o(.rodata*)    
             mouse.o(.text*)
             int_entry.o(.text*)
-            font.o(.rodata*)
             lib.o(.*)
             int.o(.*)
         }
-        .rodata : {
-            start.o(.rodata*)    
-        }
         .bss : {
+            *(.bss*)
+        }
+        .rodata : {
+            font.o(.rodata*)
         }
 
 
