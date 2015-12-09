@@ -1,5 +1,6 @@
 #include "common.h"
 
+#define SYSSEG  0x1000
 
 void init_gdtidt(void)
 {
@@ -63,16 +64,9 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar)
 
 void kernelstart(char *arg)
 {
-    while(1)
-        io_hlt();
-
 
     init_palette();
-    char *vram = (char *)0xa0000;
-    int i;
-    for (i=0;i<0xFFF;i++) {
-        *vram=i&0xFF;
-    }
+    char *vram = (char *)0xa0000 - (SYSSEG << 4);
     unsigned short xsize,ysize;
     xsize=320;
     ysize=200;

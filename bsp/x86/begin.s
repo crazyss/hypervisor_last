@@ -21,7 +21,7 @@ hypervisor:
 
 
 #init stack
-    movl    $0x0000,  %esp
+    movl    $0xFFF0,  %esp
 #jump into the C
 
     jmp     kernelstart
