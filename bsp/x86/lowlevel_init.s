@@ -141,7 +141,7 @@ gdt:
      */
     .word   0xffff      /* limit_low */
     .word   0x0000      /* base_low */
-    .byte   0x09        /* base_middle */
+    .byte   0x08        /* base_middle */
     .byte   0x92        /* access */
     .byte   0xcf        /* flags + limit_high */
     .byte   0x00        /* base_high */
