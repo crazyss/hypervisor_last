@@ -73,7 +73,7 @@ idt_ptr:
     .long   0       /* base */
 
 gdt_ptr:
-    .word   0x28        /* limit (32 bytes = 5 GDT entries) */
+    .word   0x20        /* limit (32 bytes = 5 GDT entries) */
     .long   gdt + (INITSEG * 16) /* base */
 
 gdt:
@@ -132,17 +132,4 @@ gdt:
     .byte   0x00        /* base_high */
 
 
-    /*
-     * The Stack Segment Descriptor:
-     * - Base   = 0x00000000
-     * - Size   = 4GB
-     * - Access = Present, Ring 0, Non-Exec (Data), Writable
-     * - Flags  = 4kB Granularity, 32-bit
-     */
-    .word   0xffff      /* limit_low */
-    .word   0x0000      /* base_low */
-    .byte   0x08        /* base_middle */
-    .byte   0x92        /* access */
-    .byte   0xcf        /* flags + limit_high */
-    .byte   0x00        /* base_high */
 .org 0x200, 0x90

@@ -16,12 +16,11 @@ hypervisor:
     movl    %eax, %ds
     movl    %eax, %gs
     movl    %eax, %es
-    movl    $(4 * 8), %eax
     movl    %eax, %ss
 
 
 #init stack
-    movl    $0xFFF0,  %esp
+    movl    $0x7FFF0,  %esp
 #jump into the C
 
     jmp     kernelstart
