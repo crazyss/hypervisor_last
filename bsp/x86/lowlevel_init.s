@@ -23,8 +23,50 @@ _lowlevel_init:
 	movw	%ax, %fs
 	movw	%ax, %gs
 
+#Iniialization sequence 8259a
+    movb $0x11, %al
+    out %al,    $0x20
+    nop;
+    nop;
+    out %al,    $0xA0
+    nop;
+    nop;
+    movb $0x20, %al
+    out %al, $0x21
+    nop;
+    nop;
+    movb $0x28, %al
+    out %al, $0xA1
+    nop;
+    nop;
+    movb $0x4,  %al
+    out %al,  $0x21
+    nop;
+    nop;
+    movb $0x2,  %al
+    out %al,  $0xA1
+    nop;
+    nop;
+    movb $0x01, %al
+    out %al,    $0x21
+    out %al,    $0xA1
 
-
+    movb $0xFF, %al
+    out %al,    $0x21
+    nop;
+    nop;
+    out %al,    $0xA1
+    nop;
+    nop;
+    
+    movb $0xF9, %al
+    out %al,    $0x21
+    nop;
+    nop;
+    movb $0xef, %al
+    out %al,    $0xA1
+    nop;
+    nop;
     
 #######################################################
 #switch to pmode

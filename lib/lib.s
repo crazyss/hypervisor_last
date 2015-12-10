@@ -1,6 +1,9 @@
 .code32
 .text
 
+.global io_in8
+io_in8:
+    jmp _io_in8
 .global io_out8
 io_out8:
     jmp _io_out8
@@ -53,9 +56,18 @@ _load_gdtr:
     ret
 
 
+_io_in8:
+    movw    4(%esp),    %dx
+    movw    $0x0,    %ax
+    in      %dx, %al
+    nop
+    nop
+    ret
 
 _io_out8:
     movw    4(%esp),    %dx
     movb    8(%esp),    %al
     out     %al,%dx
+    nop
+    nop
     ret

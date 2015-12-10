@@ -7,11 +7,11 @@ void io_cli(void);
 void io_out8(int port, int data); 
 int io_load_eflags(void); 
 void io_store_eflags(int eflags); 
- 
+
 void init_palette(void); 
 void set_palette(int start, int end, unsigned char *rgb); 
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1); 
- 
+
 void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *font);
 void putfont8_string(char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, char * string);
 
@@ -58,12 +58,12 @@ void load_idtr(int limit, int addr);
 
 /*8259 interrupt controller*/
 
-#define PIC1    0x20
-#define PIC2    0xa0
+#define PIC0    0x20
+#define PIC1    0xa0
+#define PIC0_COMMAND    PIC0
+#define PIC0_DATA       (PIC0+1)
 #define PIC1_COMMAND    PIC1
-#define PIC1_DATA       (PIC1+1)
-#define PIC2_COMMAND    PIC2
-#define PIC2_DATA       (PIC2+2)
+#define PIC1_DATA       (PIC1+2)
 
 
 
@@ -82,3 +82,5 @@ void load_idtr(int limit, int addr);
 extern void inthandler21(void);
 extern void inthandler27(void);
 extern void inthandler2c(void);
+
+extern char scancode [];
