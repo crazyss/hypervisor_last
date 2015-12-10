@@ -2,10 +2,16 @@
 
 #define SYSSEG  0x1000
 
+struct wjn {
+    int t;
+    int w;
+};
+
 void init_gdtidt(void)
 {
     struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_GDT;
-    struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT - (SYSSEG << 4);
+    struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) (ADR_IDT - (SYSSEG << 4));
+    //struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT;
     int i;
 #if 0
     /* GDT<82>Ì<8f><89><8a>ú<89>» */
@@ -19,7 +25,7 @@ void init_gdtidt(void)
 
     /* IDT<82>Ì<8f><89><8a>ú<89>» */
     for (i = 0; i <= LIMIT_IDT / 8; i++) {
-        set_gatedesc(idt + i, 0, 0, 0);
+        set_gatedesc(idt + i, 0xfff, 0, 0);
     }
     load_idtr(LIMIT_IDT, ADR_IDT);
 
@@ -66,7 +72,7 @@ void kernelstart(char *arg)
 {
 
     init_palette();
-    char *vram = (char *)0xa0000 - (SYSSEG << 4);
+    char *vram = (char *)(0xa0000 - (SYSSEG << 4));
     unsigned short xsize,ysize;
     xsize=320;
     ysize=200;
@@ -155,7 +161,7 @@ out:
 
     io_out8(PIC1_DATA, 0xf9); /* PIC1<82>Æ<83>L<81>[<83>{<81>[<83>h<82>ð<8b><96><89>Â(11111001) */
     io_out8(PIC2_DATA, 0xef); /* <83>}<83>E<83>X<82>ð<8b><96><89>Â(11101111) */
-
+    
 
 
     while(1)
@@ -307,13 +313,13 @@ void init_pic(void)
 
 void _inthandler21(int *esp)
 {
-    char *vram = (char *)0xa0000;
+    char *vram = (0xa0000 - (SYSSEG << 4));
     unsigned short xsize,ysize;
     xsize=320;
     ysize=200;
 
     //putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 21 (IRQ-1) : PS/2 keyboard");
-    putfont8_string((char*)0xa0000,320, 8, 40, COL8_FFFFFF,font.Bitmap , "INT 21 (IRQ-1) : PS/2 keyboard!!!");
+    putfont8_string(vram,320, 8, 40, COL8_FFFFFF,font.Bitmap , "INT 21 (IRQ-1) : PS/2 keyboard!!!");
     for (;;) {
         io_hlt();
     }
