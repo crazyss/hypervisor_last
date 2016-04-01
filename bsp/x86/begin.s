@@ -11,7 +11,6 @@ memcpy:
     ret
 
 hypervisor:
- 
     movl    $(3 * 8), %eax
     movl    %eax, %fs
     movl    %eax, %ds
@@ -19,9 +18,11 @@ hypervisor:
     movl    %eax, %es
     movl    %eax, %ss
 
+
 #init stack
-    movl    $0x3fffff,  %esp
+    movl    $0x7FFF0,  %esp
 #jump into the C
+
     jmp     kernelstart
 
 #
