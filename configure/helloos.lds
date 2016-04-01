@@ -22,7 +22,5 @@ SECTIONS
         .rodata : {
             font.o(.rodata*)
         }
-
-
 }
 

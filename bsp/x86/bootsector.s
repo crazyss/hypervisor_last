@@ -1,3 +1,6 @@
+#the frist 512 bytes
+#This is the size of a sector.
+
 CYLS = 10
 BOOTSEG =   0x07C0
 INITSEG =   0x9000
@@ -17,6 +20,7 @@ main_start:
 
     
 #move BootSector to 0x9000(INITSEG)
+#
     movw $BOOTSEG, %ax
     movw %ax,   %ds
     movw $INITSEG, %ax
@@ -34,15 +38,16 @@ goto_init_seg:
     movw %ax, %es
     movw %ax, %ss
 
-    movw $0xFF00, %sp
+    movw $0xFBFF, %sp
 
 read_disk:
 #read lowlevel_init data to INITSEG RAM from Disk
+#the early GDT store on the area of lowlevel code.
     movw $INITSEG, %ax
     movw %ax,%es
     movb $0, %ch #cylinder
-    movb $0, %dh #header
     movb $2, %cl #sector
+    movb $0, %dh #header
 
 
 readloop:
@@ -50,12 +55,12 @@ readloop:
 retry:
     movb $2, %ah    #read operation
     movb $1, %al    #a number of "sector moving" !.
-    movw $0x200, %bx    #clear bx
-    movb $0, %dl    #A driver
+    movw $0x200, %bx    #set BX register point to 0x200 offset
+    #movb $0, %dl    #A driver
     int  $0x13      #bios
     jnc  next
     
-    add  $1, %si    #timer + 1
+    add  $1, %si    #counter + 1
     cmp  $5, %si
     jae  error
 #
@@ -92,12 +97,12 @@ readloop2:
 retry2:
     movb $2, %ah    #read operation
     movb $1, %al    #a number of "sector moving" !.
-    movw $0x400, %bx    #clear bx
+    movw $0x400, %bx    #set bx point to 0x400 offset
     movb $0, %dl    #A driver
     int  $0x13      #bios
     jnc  next2
     
-    add  $1, %si    #timer + 1
+    add  $1, %si    #counter + 1
     cmp  $5, %si
     jae  error
 #
@@ -112,16 +117,16 @@ next2:
     add $0x20,%ax
     mov %ax,%es
 #    
-    add $1,%cl
-    cmp $18,%cl
+    add $1,%cl      #point to the next sector
+    cmp $18,%cl     #If the currect is 18th sector.
     jbe readloop2        #reading 18 sectors
 #    
     movb $1,%cl
     add $1,%dh
     cmp $1,%dh
-    jb readloop2         #reading 2 header
+    jb readloop2         #reading 1 header
 
-    movb $0,%dh         #reading 5 cylinders
+    movb $0,%dh         #reading 1 cylinders
     add $1,%ch
     cmp $1,%ch
     jb readloop2
@@ -166,8 +171,12 @@ disk_error_loop:
 fin:
 
 #setting video mode
-    mov $0x13,%al
+    #VIDEO - SET VIDEO MODE
+    #AH=0x00,
+    #AL=0x13, #0x13 : G  40x25  8x8   320x200  256/256K  .   A000 VGA,MCGA,ATI VIP
+
     mov $0x00,%ah
+    mov $0x13,%al
     int $0x10
 #
     ljmp $INITSEG, $lowlevel_init

@@ -1,4 +1,5 @@
-#the first code be calling from boot.s
+#the first code be calling from bootsector.s
+#This is the size of a sector.
 
 .code16
 .section ".inittext", "ax"
@@ -71,6 +72,7 @@ _lowlevel_init:
 #######################################################
 #switch to pmode
 ############################
+    #Disable interrupt in CPU core.
     cli
 
 
@@ -82,6 +84,8 @@ X86_CR0_CD = 0x40000000 /* Cache Disable */
     movl    %cr0, %eax
     orl $(X86_CR0_NW | X86_CR0_CD), %eax
     movl    %eax, %cr0
+
+#write back cache line and flush cache, WBINVD is not support on earlier than i486.
     wbinvd
 
     lidtw    idt_ptr
@@ -116,7 +120,7 @@ idt_ptr:
 
 gdt_ptr:
     .word   0x20        /* limit (32 bytes = 5 GDT entries) */
-    .long   gdt + (INITSEG * 16) /* base */
+    .long   gdt + (INITSEG * 16) /* base  [INITSEG:gdt]*/
 
 gdt:
     /*
@@ -157,6 +161,7 @@ gdt:
     .byte   0x9a        /* access */
     .byte   0xcf        /* flags + limit_high */
     .byte   0x00        /* base_high */
+    /*base = base_high .+. base_middle .+. base_low = 0x10000 */
 
 
     /*
