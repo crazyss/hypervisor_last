@@ -81,6 +81,8 @@ void drawing_desktop()
     unsigned short xsize,ysize;
     xsize=320;
     ysize=200;
+    char buf[50];
+    int i;
 
     char *mcursor[256];
     int mx,my;
@@ -109,8 +111,10 @@ void drawing_desktop()
     boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize -  3, xsize -  4, ysize -  3);
     boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
 
-
+    i=memtest(0x400000, 0xbfffffff)/(1024*1024);
+    sprintf(buf,"MEMORY %d MB.", i);
     putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 13!!!");
+    putfont8_string(vram,xsize, 8, 28, COL8_FFFFFF,font.Bitmap , buf);
 
     /*draw a mouse on cetern screen */
     //init_mouse_cursor8(mcursor, COL8_008484);
@@ -130,7 +134,7 @@ void kernelstart(char *arg)
 
     drawing_desktop();
 
-    
+
     io_out8(PIC0_DATA, 0xf9); /* PIC0<82>Æ<83>L<81>[<83>{<81>[<83>h<82>ð<8b><96><89>Â(11111001) */
     io_out8(PIC1_DATA, 0xef); /* <83>}<83>E<83>X<82>ð<8b><96><89>Â(11101111) */
 
@@ -262,23 +266,6 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
     }
     return;
 }
-
-int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
-{
-    char *str,*end;
-    str = buf;
-    end = buf + size;
-
-    if (end < buf) {
-        end = ((void*) -1);
-        size = end - buf;
-    }
-    while(*fmt) {
-        const char *old_fmt = fmt;
-
-    }
-}
-
 
 
 void init_pic(void)
