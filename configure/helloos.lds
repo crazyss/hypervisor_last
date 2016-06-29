@@ -13,13 +13,17 @@ SECTIONS
             start.o(.rodata*)    
             mouse.o(.text*)
             int_entry.o(.text*)
+            memtest.o(.text*)
+            libmemtest.o(.text*)
             lib.o(.*)
             int.o(.*)
+            *(.text*)
         }
         .bss : {
             *(.bss*)
         }
         .rodata : {
+            *(.rodata*)
             font.o(.rodata*)
         }
 }

@@ -123,12 +123,12 @@ next2:
 #    
     movb $1,%cl
     add $1,%dh
-    cmp $1,%dh
+    cmp $2,%dh
     jb readloop2         #reading 1 header
 
     movb $0,%dh         #reading 1 cylinders
     add $1,%ch
-    cmp $1,%ch
+    cmp $2,%ch
     jb readloop2
 
 #
