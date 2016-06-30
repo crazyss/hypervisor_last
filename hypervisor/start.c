@@ -1,6 +1,7 @@
 #include "common.h"
 
 #define SYSSEG  0x1000
+#define MEMMAN_ADDR 0x003c0000
 
 struct wjn {
     int t;
@@ -82,10 +83,12 @@ void drawing_desktop()
     xsize=320;
     ysize=200;
     char buf[50];
-    int i;
-
+    unsigned int memtotal;
+    struct MEMMAN *memman = (struct MEMMAN *) (MEMMAN_ADDR - (SYSSEG << 4));
+    memman_init(memman);
     char *mcursor[256];
     int mx,my;
+    int ret;
 
     static char font_A[16] = {
         0x00, 0x18, 0x18, 0x18, 0x18, 0x24, 0x24, 0x24,
@@ -111,8 +114,16 @@ void drawing_desktop()
     boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize -  3, xsize -  4, ysize -  3);
     boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
 
-    i=memtest(0x400000, 0xbfffffff)/(1024*1024);
-    sprintf(buf,"MEMORY %d MB.", i);
+    memtotal=memtest(0x400000, 0xbfffffff);
+    ret = memman_free(memman, 0x00001000, 0x0009e000);
+    if (ret != 0) {
+        putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 1 Failed");
+    }
+    ret = memman_free(memman, 0x00400000, memtotal - 0x00400000);
+    if (ret != 0) {
+        putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 2 Failed");
+    }
+    sprintf(buf,"MEMORY %d MB. %dKB Free.", memtotal / (1024*1024), memman_total(memman) / 1024);
     putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 13!!!");
     putfont8_string(vram,xsize, 8, 28, COL8_FFFFFF,font.Bitmap , buf);
 

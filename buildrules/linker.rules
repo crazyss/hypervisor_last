@@ -15,6 +15,8 @@ run.x86.256mb: $(OBJDIR)/boot.img
 	qemu-kvm -cpu 486 -m 256 -fda $< -net none -no-kvm
 run.x86: $(OBJDIR)/boot.img
 	qemu-kvm -cpu 486 -fda $< -net none -no-kvm
+run.x86.debug.32m: $(OBJDIR)/boot.img
+	qemu-system-x86_64 -cpu 486 -m 32 -fda $< -net none -no-kvm -monitor stdio
 run.x86.debug: $(OBJDIR)/boot.img
 	qemu-system-x86_64 -cpu 486 -fda $< -net none -no-kvm -monitor stdio
 run.x86.debug.gdb: $(OBJDIR)/boot.img
