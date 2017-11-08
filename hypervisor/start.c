@@ -1,7 +1,11 @@
 #include "common.h"
 
 #define SYSSEG  0x1000
-#define MEMMAN_ADDR 0x003c0000
+#define MEMMAN_ADDR (char *)(0x003c0000)
+#define VRAM_ADDR (char *)((0xa0000)-(SYSSEG << 4))
+
+void enable_mouse(void);
+void init_keyboard(void);
 
 struct wjn {
     int t;
@@ -78,7 +82,7 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar)
 }
 void drawing_desktop()
 {
-    char *vram = (char *)(0xa0000 - (SYSSEG << 4));
+    char *vram = VRAM_ADDR;
     unsigned short xsize,ysize;
     xsize=320;
     ysize=200;
@@ -140,7 +144,7 @@ void kernelstart(char *arg)
     init_palette();
 
     init_gdtidt();
-    //init_pic();
+    init_pic();
     io_sti();
 
     drawing_desktop();
@@ -149,12 +153,56 @@ void kernelstart(char *arg)
     io_out8(PIC0_DATA, 0xf9); /* PIC0<82>Æ<83>L<81>[<83>{<81>[<83>h<82>ð<8b><96><89>Â(11111001) */
     io_out8(PIC1_DATA, 0xef); /* <83>}<83>E<83>X<82>ð<8b><96><89>Â(11101111) */
 
+		init_keyboard();
+
+		enable_mouse();
 
     while(1)
         io_hlt();
     return ; 
 }
 
+
+#define PORT_KEYDAT				0x0060
+#define PORT_KEYSTA				0x0064
+#define PORT_KEYCMD				0x0064
+#define KEYSTA_SEND_NOTREADY	0x02
+#define KEYCMD_WRITE_MODE		0x60
+#define KBC_MODE				0x47
+
+void wait_KBC_sendready(void)
+{
+	/* 等待键盘控制电路准备完毕 */
+	for (;;) {
+		if ((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
+			break;
+		}
+	}
+	return;
+}
+
+void init_keyboard(void)
+{
+	/* 初始化键盘控制电路 */
+	wait_KBC_sendready();
+	io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
+	wait_KBC_sendready();
+	io_out8(PORT_KEYDAT, KBC_MODE);
+	return;
+}
+
+#define KEYCMD_SENDTO_MOUSE		0xd4
+#define MOUSECMD_ENABLE			0xf4
+
+void enable_mouse(void)
+{
+	/* 激活鼠标 */
+	wait_KBC_sendready();
+	io_out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
+	wait_KBC_sendready();
+	io_out8(PORT_KEYDAT, MOUSECMD_ENABLE);
+	return; /* 顺利的话，键盘控制器会返回ACK(0xfa) */
+}
 
 #if 0
 void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *font_bitmap)
@@ -282,15 +330,15 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
 void init_pic(void)
 {
 
-    io_out8(PIC1_DATA,  0xFF); 
-    io_out8(PIC0_DATA,  0xFF); 
+    io_out8(PIC1_OCW1,  0xFF); 
+    io_out8(PIC0_OCW1,  0xFF); 
 
     io_out8(PIC0_COMMAND,   0x11);
     io_out8(PIC1_COMMAND,   0x11);
 
 
-    io_out8(PIC0_DATA, 0x20  );
     io_out8(PIC1_DATA, 0x28  );
+    io_out8(PIC0_DATA, 0x20  );
 
     io_out8(PIC0_DATA, 1 << 2);
     io_out8(PIC1_DATA, 2);
@@ -309,7 +357,7 @@ void init_pic(void)
 
 void _inthandler21(int *esp)
 {
-    char *vram = (char*)(0xa0000 - (SYSSEG << 4));
+    char *vram = VRAM_ADDR;
     unsigned short xsize,ysize;
     unsigned char data;
     unsigned char out_buffer[3];
