@@ -11,6 +11,7 @@ SECTIONS
             begin.o(.text*)
             start.o(.text*)
             start.o(.rodata*)    
+            start.o(.data*)    
             mouse.o(.text*)
             int_entry.o(.text*)
             mm.o(.text*)

@@ -16,31 +16,27 @@ load_idtr:
 .global io_sti
 io_sti:
     jmp _io_sti
+.global io_cli
+io_cli:
+    jmp _io_cli
+
+.global io_stihlt
+io_stihlt:
+    jmp _io_stihlt
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+_io_cli:
+		cli
+		ret
 
 _io_sti:
     sti
     ret
 
+_io_stihlt:
+    sti
+		hlt
+    ret
 
 _load_idtr:
     movw    4(%esp),    %ax
