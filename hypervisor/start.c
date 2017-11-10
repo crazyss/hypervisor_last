@@ -1,16 +1,24 @@
 #include "common.h"
+#include "fifo8.h"
 
 #define SYSSEG  0x1000
 #define MEMMAN_ADDR (char *)(0x003c0000)
-#define VRAM_ADDR (char *)((0xa0000)-(SYSSEG << 4))
+#define VRAM_ADDR (unsigned char *)((0xa0000)-(SYSSEG << 4))
 
 void enable_mouse(void);
 void init_keyboard(void);
+void keyboard_handler(unsigned char data);
+void mouse_handler(unsigned char data);
 
 struct wjn {
     int t;
     int w;
 };
+
+struct fifo key_fifo;
+struct fifo mouse_fifo;
+unsigned char keybuffer[32];
+unsigned char mousebuffer[128];
 
 struct screen_postion {
     int x;
@@ -46,12 +54,12 @@ void init_gdtidt(void)
     
 
     set_gatedesc(idt + 0x21, (int) inthandler21, 2 * 8, AR_INTGATE32);
-    set_gatedesc(idt + 0x2c, (int) inthandler2c, 2 * 8, AR_INTGATE32);
-#if 0
+#if 1
     /* IDT<82>Ì<90>Ý<92>è */
     set_gatedesc(idt + 0x27, (int) inthandler27, 2 * 8, AR_INTGATE32);
 #endif
 
+    set_gatedesc(idt + 0x2c, (int) inthandler2c, 2 * 8, AR_INTGATE32);
     return;
 }
 
@@ -82,7 +90,7 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar)
 }
 void drawing_desktop()
 {
-    char *vram = VRAM_ADDR;
+    unsigned char *vram = VRAM_ADDR;
     unsigned short xsize,ysize;
     xsize=320;
     ysize=200;
@@ -128,14 +136,14 @@ void drawing_desktop()
         putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 2 Failed");
     }
     sprintf(buf,"MEMORY %d MB. %dKB Free.", memtotal / (1024*1024), memman_total(memman) / 1024);
-    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 13!!!");
+    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 0x10!!!");
     putfont8_string(vram,xsize, 8, 28, COL8_FFFFFF,font.Bitmap , buf);
 
     /*draw a mouse on cetern screen */
-    //init_mouse_cursor8(mcursor, COL8_008484);
-    //mx = (xsize - 16) / 2;
-    //my = (ysize - 28 - 16) / 2;
-    //putblock8_8(vram, xsize, 16, 16, mx, my, mcursor, 16);
+    init_mouse_cursor8(mcursor, COL8_008484);
+    mx = (xsize - 16) / 2;
+    my = (ysize - 28 - 16) / 2;
+    putblock8_8(vram, xsize, 16, 16, mx, my, mcursor, 16);
 }
 
 void kernelstart(char *arg)
@@ -145,9 +153,10 @@ void kernelstart(char *arg)
 
     init_gdtidt();
     init_pic();
+		fifo_init(&key_fifo, 32, keybuffer);
+		fifo_init(&mouse_fifo, 128, mousebuffer);
     io_sti();
 
-    drawing_desktop();
 
 
     io_out8(PIC0_DATA, 0xf9); /* PIC0<82>Æ<83>L<81>[<83>{<81>[<83>h<82>ð<8b><96><89>Â(11111001) */
@@ -157,8 +166,25 @@ void kernelstart(char *arg)
 
 		enable_mouse();
 
-    while(1)
-        io_hlt();
+    drawing_desktop();
+
+    while(1) {
+			//io_cli();
+			if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0)	{
+				io_stihlt();
+			}else {
+					if (fifo_status(&key_fifo) > 0) {
+						unsigned char data = fifo_get(&key_fifo);
+						io_sti();
+						keyboard_handler(data);
+					}else if (fifo_status(&mouse_fifo) > 0) {
+						unsigned char data = fifo_get(&mouse_fifo);
+						io_sti();
+						mouse_handler(data);
+					}
+			}
+		}
+
     return ; 
 }
 
@@ -197,6 +223,18 @@ void init_keyboard(void)
 void enable_mouse(void)
 {
 	/* 激活鼠标 */
+//	unsigned char status;
+//	wait_KBC_sendready();
+//	io_out8(PORT_KEYCMD, 0x20);
+//	wait_KBC_sendready();
+//	status = ((char)io_in8(PORT_KEYDAT)|0x2);
+//	status &= 0xDF;
+//	wait_KBC_sendready();
+//	io_out8(PORT_KEYCMD, 0x60);
+//	wait_KBC_sendready();
+//	io_out8(PORT_KEYDAT, status);
+//
+//
 	wait_KBC_sendready();
 	io_out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
 	wait_KBC_sendready();
@@ -241,7 +279,7 @@ void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *
 }
 
 
-void putfont8_string(char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, char * string)
+void putfont8_string(unsigned char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, unsigned char * string)
 {
     char ch ;
     int x1,y1;
@@ -354,22 +392,16 @@ void init_pic(void)
 
 
 #define PORT_KEYDAT 0x0060
-
-void _inthandler21(int *esp)
+void keyboard_handler(unsigned char data)
 {
-    char *vram = VRAM_ADDR;
+    unsigned char *vram = VRAM_ADDR;
     unsigned short xsize,ysize;
-    unsigned char data;
     unsigned char out_buffer[3];
     unsigned char t;
     xsize=320;
     ysize=200;
-    //drawing_desktop();
-    io_out8(PIC0_COMMAND, 0x61);
-    data = io_in8(PORT_KEYDAT);
-    if (data >= 0x81)
+    if (data >= 0x81 || data == -1)
         return ;
-
     out_buffer[0] = scancode[data];
     if (out_buffer[0] == 0) {
 #if 1
@@ -414,25 +446,45 @@ void _inthandler21(int *esp)
 
     //putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 21 (IRQ-1) : PS/2 keyboard");
     if (data == 0x30 || data == 0xB0) {
-        putfont8_string(vram,xsize, 8, 100, COL8_FFFFFF,font.Bitmap , "May the source be with you!");
+        putfont8_string(vram,xsize, 8, 100, COL8_FFFFFF,font.Bitmap , (unsigned char *)"May the source be with you!");
     }
-#if 0
-    for (;;) {
-        io_hlt();
-    }
-#endif
 }
 
-void _inthandler2c(int *esp)
-{   
-    char *vram = (char *)(0xa0000 - (SYSSEG << 4));
+void _inthandler21(int *esp)
+{
+    unsigned char data;
+    io_out8(PIC0_COMMAND, 0x61);
+    data = io_in8(PORT_KEYDAT);
+		fifo_put(&key_fifo, data);
+		return;
+}
+
+int james=0;
+void mouse_handler(unsigned char data)
+{
+    unsigned char *vram = VRAM_ADDR;
     unsigned short xsize,ysize;
+		char buffer[10];
     xsize=320;
     ysize=200;
+		sprintf(buffer,"%x",data);
+    //putfont8_string(vram,xsize, 8, 80, COL8_FFFFFF,font.Bitmap , (unsigned char *)"INT 2C (IRQ-12) : PS/2 mouse!!!");
+    putfont8_string(vram,xsize, 8, 80, COL8_FFFFFF,font.Bitmap , (unsigned char *)buffer);
+		/*fix me*/
+		//while(1);
+		return;
+}
+void _inthandler2c(int *esp)
+{   
+		unsigned char data;
+		io_out8(PIC1_OCW2, 0x64);
+		io_out8(PIC0_OCW2, 0x62);
+		data = io_in8(PORT_KEYDAT);
+		fifo_put(&mouse_fifo, data);
+		data = io_in8(PORT_KEYDAT);
+		fifo_put(&mouse_fifo, data);
+		return;
 
-
-    //putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 2C (IRQ-12) : PS/2 mouse");
-    putfont8_string(vram,xsize, 8, 80, COL8_FFFFFF,font.Bitmap , "INT 2C (IRQ-12) : PS/2 mouse!!!");
 }
 
 void _inthandler27(int *esp)

@@ -4,7 +4,10 @@
 
 void io_hlt(void); 
 void io_cli(void); 
+void io_sti(void); 
+void io_stihlt(void); 
 void io_out8(int port, int data); 
+int io_in8(int port); 
 int io_load_eflags(void); 
 void io_store_eflags(int eflags); 
 
@@ -13,7 +16,7 @@ void set_palette(int start, int end, unsigned char *rgb);
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1); 
 
 void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *font);
-void putfont8_string(char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, char * string);
+void putfont8_string(unsigned char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, unsigned char * string);
 
 void init_pic(void);
 
@@ -61,7 +64,9 @@ void load_idtr(int limit, int addr);
 #define PIC0    0x20
 #define PIC1    0xa0
 #define PIC0_OCW1				PIC0+1
-#define PIC1_OCW1    		PIC0+1
+#define PIC0_OCW2				PIC0
+#define PIC1_OCW1    		PIC1+1
+#define PIC1_OCW2    		PIC1
 #define PIC0_IMR				PIC0_OCW1
 #define PIC1_IMR				PIC1_OCW1    		
 #define PIC0_ICW1				PIC0
