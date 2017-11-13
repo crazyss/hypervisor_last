@@ -22,6 +22,9 @@ void init_pic(void);
 
 extern struct bitmap_font font;
 
+#define SYSSEG  0x1000
+#define MEMMAN_ADDR (char *)(0x003c0000)
+#define VRAM_ADDR (unsigned char *)((0xa0000)-(SYSSEG << 4))
 #define COL8_000000     0
 #define COL8_FF0000     1
 #define COL8_00FF00     2

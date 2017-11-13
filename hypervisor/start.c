@@ -1,9 +1,6 @@
 #include "common.h"
 #include "fifo8.h"
 
-#define SYSSEG  0x1000
-#define MEMMAN_ADDR (char *)(0x003c0000)
-#define VRAM_ADDR (unsigned char *)((0xa0000)-(SYSSEG << 4))
 
 void enable_mouse(void);
 void init_keyboard(void);
@@ -98,8 +95,6 @@ void drawing_desktop()
     unsigned int memtotal;
     struct MEMMAN *memman = (struct MEMMAN *) (MEMMAN_ADDR - (SYSSEG << 4));
     memman_init(memman);
-    char *mcursor[256];
-    int mx,my;
     int ret;
 
     static char font_A[16] = {
@@ -139,11 +134,6 @@ void drawing_desktop()
     putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 0x10!!!");
     putfont8_string(vram,xsize, 8, 28, COL8_FFFFFF,font.Bitmap , buf);
 
-    /*draw a mouse on cetern screen */
-    init_mouse_cursor8(mcursor, COL8_008484);
-    mx = (xsize - 16) / 2;
-    my = (ysize - 28 - 16) / 2;
-    putblock8_8(vram, xsize, 16, 16, mx, my, mcursor, 16);
 }
 
 void kernelstart(char *arg)
@@ -168,6 +158,7 @@ void kernelstart(char *arg)
 
     drawing_desktop();
 
+		//draw_mouse_on_screen();
     while(1) {
 			//io_cli();
 			if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0)	{
@@ -181,6 +172,7 @@ void kernelstart(char *arg)
 						unsigned char data = fifo_get(&mouse_fifo);
 						io_sti();
 						mouse_handler(data);
+						//draw_mouse_on_screen();
 					}
 			}
 		}
@@ -459,17 +451,34 @@ void _inthandler21(int *esp)
 		return;
 }
 
-int james=0;
+int mouse_status = 0;
 void mouse_handler(unsigned char data)
 {
     unsigned char *vram = VRAM_ADDR;
     unsigned short xsize,ysize;
-		char buffer[10];
+		char buffer[20];
+		char mouse_packet[3];
     xsize=320;
     ysize=200;
-		sprintf(buffer,"%x",data);
+		if (mouse_status == 0) {
+			if (data == 0xfa) {
+					mouse_status = 1;
+			}
+		}else if (mouse_status == 1) {
+			mouse_packet[0] = data;
+			mouse_status = 2;
+		}else if (mouse_status == 2) {
+			mouse_packet[1] = data;
+			mouse_status = 3;
+		}else if (mouse_status == 3) {
+			mouse_packet[2] = data;
+			mouse_status = 1;
+		}
+		sprintf(buffer,"%2x,%2x,%2x",mouse_packet[0], mouse_packet[1], mouse_packet[2]);
     //putfont8_string(vram,xsize, 8, 80, COL8_FFFFFF,font.Bitmap , (unsigned char *)"INT 2C (IRQ-12) : PS/2 mouse!!!");
-    putfont8_string(vram,xsize, 8, 80, COL8_FFFFFF,font.Bitmap , (unsigned char *)buffer);
+		boxfill8(vram, xsize, COL8_008484, 8, 120, 320, 170);
+		//boxfill8(vram, xsize, COL8_008484, 8, 120, 32+8*8-1, 31);
+    putfont8_string(vram,xsize, 8, 120, COL8_FFFFFF,font.Bitmap , (unsigned char *)buffer);
 		/*fix me*/
 		//while(1);
 		return;
