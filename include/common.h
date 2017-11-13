@@ -103,4 +103,5 @@ extern void inthandler21(void);
 extern void inthandler27(void);
 extern void inthandler2c(void);
 
+void draw_mouse_on_screen();
 extern char scancode [];
