@@ -1,6 +1,6 @@
 #include "common.h"
 
-const static char cursor[16][16] = {
+const char cursor[16][16] = {
 		"**************..",
 		"*OOOOOOOOOOO*...",
 		"*OOOOOOOOOO*....",
@@ -18,11 +18,11 @@ const static char cursor[16][16] = {
 		"............*OO*",
 		".............***"
 };
+
 void init_mouse_cursor8(char *mouse, char bc)
     /* <83>}<83>E<83>X<83>J<81>[<83>\<83><8b><82>ð<8f><80><94>õ<81>i16x16<81>j */
 {
     int x, y;
-
     for (y = 0; y < 16; y++) {
         for (x = 0; x < 16; x++) {
             if (cursor[y][x] == '*') {
