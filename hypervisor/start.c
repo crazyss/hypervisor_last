@@ -16,6 +16,7 @@ struct fifo key_fifo;
 struct fifo mouse_fifo;
 unsigned char keybuffer[32];
 unsigned char mousebuffer[128];
+unsigned char james_global;
 
 struct screen_postion {
     int x;
@@ -134,6 +135,7 @@ void drawing_desktop()
     putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 0x10!!!");
     putfont8_string(vram,xsize, 8, 28, COL8_FFFFFF,font.Bitmap , buf);
 
+		draw_mouse_on_screen();
 }
 
 void kernelstart(char *arg)
@@ -160,7 +162,7 @@ void kernelstart(char *arg)
 
 		//draw_mouse_on_screen();
     while(1) {
-			//io_cli();
+			io_cli();
 			if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0)	{
 				io_stihlt();
 			}else {
@@ -172,7 +174,6 @@ void kernelstart(char *arg)
 						unsigned char data = fifo_get(&mouse_fifo);
 						io_sti();
 						mouse_handler(data);
-						//draw_mouse_on_screen();
 					}
 			}
 		}
@@ -458,6 +459,7 @@ void mouse_handler(unsigned char data)
     unsigned short xsize,ysize;
 		char buffer[20];
 		char mouse_packet[3];
+		char print = 0;
     xsize=320;
     ysize=200;
 		if (mouse_status == 0) {
@@ -473,14 +475,15 @@ void mouse_handler(unsigned char data)
 		}else if (mouse_status == 3) {
 			mouse_packet[2] = data;
 			mouse_status = 1;
+			print = 1;
 		}
-		sprintf(buffer,"%2x,%2x,%2x",mouse_packet[0], mouse_packet[1], mouse_packet[2]);
-    //putfont8_string(vram,xsize, 8, 80, COL8_FFFFFF,font.Bitmap , (unsigned char *)"INT 2C (IRQ-12) : PS/2 mouse!!!");
-		boxfill8(vram, xsize, COL8_008484, 8, 120, 320, 170);
-		//boxfill8(vram, xsize, COL8_008484, 8, 120, 32+8*8-1, 31);
-    putfont8_string(vram,xsize, 8, 120, COL8_FFFFFF,font.Bitmap , (unsigned char *)buffer);
 		/*fix me*/
 		//while(1);
+		if (print == 1) {
+			sprintf(buffer,"%2x,%2x,%2x",mouse_packet[0], mouse_packet[1], mouse_packet[2]);
+			boxfill8(vram, xsize, COL8_008484, 8, 120, 320, 170);
+			putfont8_string(vram,xsize, 8, 120, COL8_FFFFFF,font.Bitmap , (unsigned char *)buffer);
+		}
 		return;
 }
 void _inthandler2c(int *esp)

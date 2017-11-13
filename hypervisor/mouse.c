@@ -1,26 +1,26 @@
 #include "common.h"
 
+const static char cursor[16][16] = {
+		"**************..",
+		"*OOOOOOOOOOO*...",
+		"*OOOOOOOOOO*....",
+		"*OOOOOOOOO*.....",
+		"*OOOOOOOO*......",
+		"*OOOOOOO*.......",
+		"*OOOOOOO*.......",
+		"*OOOOOOOO*......",
+		"*OOOO**OOO*.....",
+		"*OOO*..*OOO*....",
+		"*OO*....*OOO*...",
+		"*O*......*OOO*..",
+		"**........*OOO*.",
+		"*..........*OOO*",
+		"............*OO*",
+		".............***"
+};
 void init_mouse_cursor8(char *mouse, char bc)
     /* <83>}<83>E<83>X<83>J<81>[<83>\<83><8b><82>ð<8f><80><94>õ<81>i16x16<81>j */
 {
-    static char cursor[16][16] = {
-        "**************..",
-        "*OOOOOOOOOOO*...",
-        "*OOOOOOOOOO*....",
-        "*OOOOOOOOO*.....",
-        "*OOOOOOOO*......",
-        "*OOOOOOO*.......",
-        "*OOOOOOO*.......",
-        "*OOOOOOOO*......",
-        "*OOOO**OOO*.....",
-        "*OOO*..*OOO*....",
-        "*OO*....*OOO*...",
-        "*O*......*OOO*..",
-        "**........*OOO*.",
-        "*..........*OOO*",
-        "............*OO*",
-        ".............***"
-    };
     int x, y;
 
     for (y = 0; y < 16; y++) {
@@ -40,7 +40,7 @@ void init_mouse_cursor8(char *mouse, char bc)
 }
 
 
-void putblock8_8(char *vram, int vxsize, int pxsize,
+void putblock8_8(unsigned char *vram, int vxsize, int pxsize,
         int pysize, int px0, int py0, char *buf, int bxsize)
 {
     int x, y;
@@ -55,11 +55,11 @@ void putblock8_8(char *vram, int vxsize, int pxsize,
 #if 1
 void draw_mouse_on_screen()
 {
-               int mx,my;
-               int xsize,ysize;
-               char mcursor[256];
-               xsize=320;
-               ysize=200;
+    int mx,my;
+    int xsize,ysize;
+    char mcursor[256];
+    xsize=320;
+    ysize=200;
 
     init_mouse_cursor8(mcursor, COL8_008484);
     mx = (xsize - 16) / 2;
