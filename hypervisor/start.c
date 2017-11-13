@@ -6,6 +6,7 @@ void enable_mouse(void);
 void init_keyboard(void);
 void keyboard_handler(unsigned char data);
 void mouse_handler(unsigned char data);
+extern char mcursor[256];
 
 struct wjn {
     int t;
@@ -26,6 +27,8 @@ struct screen_postion screen_pos = {
     .x = 0,
     .y = 20,
 };
+
+struct mouse_info mouse_status = {0};
 
 void init_gdtidt(void)
 {
@@ -102,7 +105,10 @@ void drawing_desktop()
         0x00, 0x18, 0x18, 0x18, 0x18, 0x24, 0x24, 0x24,
         0x24, 0x7e, 0x42, 0x42, 0x42, 0xe7, 0x00, 0x00
     };
-
+		/*init mouse global data*/
+    mouse_status.mx = (xsize - 16) / 2;
+    mouse_status.my = (ysize - 28 - 16) / 2;
+    init_mouse_cursor8(mcursor, COL8_008484);
 
     boxfill8(vram, xsize, COL8_008484,  0,         0,          xsize -  1, ysize - 29);
     boxfill8(vram, xsize, COL8_C6C6C6,  0,         ysize - 28, xsize -  1, ysize - 28);
@@ -135,7 +141,7 @@ void drawing_desktop()
     putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 0x10!!!");
     putfont8_string(vram,xsize, 8, 28, COL8_FFFFFF,font.Bitmap , buf);
 
-		draw_mouse_on_screen();
+		draw_mouse_on_screen(&mouse_status);
 }
 
 void kernelstart(char *arg)
@@ -157,6 +163,8 @@ void kernelstart(char *arg)
 		init_keyboard();
 
 		enable_mouse();
+
+
 
     drawing_desktop();
 
@@ -451,18 +459,11 @@ void _inthandler21(int *esp)
 		return;
 }
 
-struct mouse_info {
-	char phase;
-	unsigned char buf[3];
-	int x, y, btn;
-};
-struct mouse_info mouse_status = {0};
 void mouse_handler(unsigned char data)
 {
     unsigned char *vram = VRAM_ADDR;
     unsigned short xsize,ysize;
 		char buffer[20];
-		char mouse_packet[3];
     xsize=320;
     ysize=200;
 		if (mouse_status.phase == 0) {
@@ -472,26 +473,47 @@ void mouse_handler(unsigned char data)
 			return ;
 		}else if (mouse_status.phase == 1) {
 			if ((data & 0xc8) == 0x08) {
-				mouse_status.phase = 0;
-				return;
+				mouse_status.buf[0] = data;
+				mouse_status.phase = 2;
 			}
-				
-			mouse_packet[0] = data;
-			mouse_status.phase = 2;
-			return ;
+			return;
 		}else if (mouse_status.phase == 2) {
-			mouse_packet[1] = data;
+			mouse_status.buf[1] = data;
 			mouse_status.phase = 3;
 			return ;
 		}else if (mouse_status.phase == 3) {
-			mouse_packet[2] = data;
+			mouse_status.buf[2] = data;
 			mouse_status.phase = 1;
+			mouse_status.btn = mouse_status.buf[0] & 0x07;
+			mouse_status.x = mouse_status.buf[1];
+			mouse_status.y = mouse_status.buf[2];
+			
+			if ((mouse_status.buf[0] & 0x10) != 0) {
+				mouse_status.x |= 0xffffff00;
+			}
+			if ((mouse_status.buf[0] & 0x20) != 0) {
+				mouse_status.y |= 0xffffff00;
+			}
+			mouse_status.y = -mouse_status.y;
+			boxfill8(VRAM_ADDR, xsize, COL8_008484, mouse_status.mx, mouse_status.my, mouse_status.mx + 15, mouse_status.my + 15);
+			//mouse_status.mx += mouse_status.x;
+			mouse_status.mx += mouse_status.x;
+			mouse_status.my += mouse_status.y;
+			if (mouse_status.mx < 0) {
+				mouse_status.mx = 0;
+			}
+			if (mouse_status.my < 0) {
+				mouse_status.my = 0;
+			}
+			if (mouse_status.mx > xsize - 16) {
+				mouse_status.mx = xsize - 16;
+			}
+			if (mouse_status.my > ysize - 16) {
+				mouse_status.my = ysize - 16;
+			}
+			draw_mouse_on_screen(&mouse_status);
+			return;
 		}
-		/*fix me*/
-		//while(1);
-		sprintf(buffer,"%2x,%2x,%2x",mouse_packet[0], mouse_packet[1], mouse_packet[2]);
-		boxfill8(vram, xsize, COL8_008484, 8, 120, 320, 170);
-		putfont8_string(vram,xsize, 8, 120, COL8_FFFFFF,font.Bitmap , (unsigned char *)buffer);
 		return;
 }
 void _inthandler2c(int *esp)

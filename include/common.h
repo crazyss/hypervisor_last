@@ -103,5 +103,12 @@ extern void inthandler21(void);
 extern void inthandler27(void);
 extern void inthandler2c(void);
 
-void draw_mouse_on_screen();
+struct mouse_info {
+	char phase;
+	unsigned char buf[3];
+	int x, y, btn;
+	int mx, my;
+};
+void draw_mouse_on_screen(struct mouse_info*);
+void init_mouse_cursor8(char *, char);
 extern char scancode [];

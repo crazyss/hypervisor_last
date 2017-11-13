@@ -52,18 +52,25 @@ void putblock8_8(unsigned char *vram, int vxsize, int pxsize,
     return;
 }
 
+char mcursor[256];
 #if 1
-void draw_mouse_on_screen()
+extern struct mouse_info mouse_status;
+void draw_mouse_on_screen(struct mouse_info *p)
 {
     int mx,my;
     int xsize,ysize;
-    char mcursor[256];
     xsize=320;
     ysize=200;
+		char buffer[20];
 
-    init_mouse_cursor8(mcursor, COL8_008484);
-    mx = (xsize - 16) / 2;
-    my = (ysize - 28 - 16) / 2;
+		
+		mx = p->mx;
+		my = p->my;
+		sprintf(buffer,"%p,%p", &mouse_status.mx,&mouse_status.my);
+    putfont8_string(VRAM_ADDR,xsize, 8, 50, COL8_FFFFFF,font.Bitmap , buffer);
+		sprintf(buffer,"%p,%p", &p->mx,&p->my);
+    putfont8_string(VRAM_ADDR,xsize, 8, 60, COL8_FFFFFF,font.Bitmap , buffer);
     putblock8_8(VRAM_ADDR, xsize, 16, 16, mx, my, mcursor, 16);
+
 }
 #endif
