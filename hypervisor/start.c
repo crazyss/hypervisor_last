@@ -471,7 +471,7 @@ void mouse_handler(unsigned char data)
 			}
 			return ;
 		}else if (mouse_status.phase == 1) {
-			if ((data & 0x80) == 0) {
+			if ((data & 0xc8) == 0x08) {
 				mouse_status.phase = 0;
 				return;
 			}

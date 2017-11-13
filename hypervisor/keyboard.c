@@ -1,4 +1,4 @@
-char scancode[] = {
+const char scancode[] = {
 0,
 0,
 '1',
