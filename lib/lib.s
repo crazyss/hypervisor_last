@@ -38,6 +38,7 @@ _io_stihlt:
 		hlt
     ret
 
+/*https://en.wikibooks.org/wiki/X86_Disassembly/Functions_and_Stack_Frames*/
 _load_idtr:
     movw    4(%esp),    %ax
     movw    %ax,    6(%esp)
@@ -46,8 +47,8 @@ _load_idtr:
 
 _load_gdtr:
 
-    movw 4(%esp),    %ax
-    movw %ax,     6(%esp)
+    movw 		4(%esp),    %ax
+    movw 		%ax,     6(%esp)
     lgdt    6(%esp)
     ret
 
