@@ -62,14 +62,14 @@ void draw_mouse_on_screen(struct mouse_info *p)
     xsize=320;
     ysize=200;
 		char buffer[20];
-
-		
 		mx = p->mx;
 		my = p->my;
+#if 0
 		sprintf(buffer,"%p,%p", &mouse_status.mx,&mouse_status.my);
     putfont8_string(VRAM_ADDR,xsize, 8, 50, COL8_FFFFFF,font.Bitmap , buffer);
 		sprintf(buffer,"%p,%p", &p->mx,&p->my);
     putfont8_string(VRAM_ADDR,xsize, 8, 60, COL8_FFFFFF,font.Bitmap , buffer);
+#endif
     putblock8_8(VRAM_ADDR, xsize, 16, 16, mx, my, mcursor, 16);
 
 }

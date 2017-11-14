@@ -18,7 +18,6 @@ hypervisor:
     movl    %eax, %es
     movl    %eax, %ss
 
-
 #init stack
     movl    $0xFFFF0,  %esp
 #jump into the C
@@ -47,3 +46,5 @@ msg:
     .asciz "Hypervisor"
 len_msg:
     .int . - msg
+
+bootpack:

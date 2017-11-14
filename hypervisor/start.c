@@ -32,20 +32,19 @@ struct mouse_info mouse_status = {0};
 
 void init_gdtidt(void)
 {
-    struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_GDT;
+    struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) (ADR_GDT - (SYSSEG << 4));
     struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) (ADR_IDT - (SYSSEG << 4));
     //struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT;
     int i;
-#if 0
     /* GDT<82>Ì<8f><89><8a>ú<89>» */
     for (i = 0; i <= LIMIT_GDT / 8; i++) {
         set_segmdesc(gdt + i, 0, 0, 0);
     }
-    set_segmdesc(gdt + 2, 0xffffffff,   0x00009000, AR_CODE32_ER);
+#if 0
+    set_segmdesc(gdt + 2, 0xffffffff,   0x00010000, AR_CODE32_ER);
     set_segmdesc(gdt + 3, LIMIT_BOTPAK, ADR_BOTPAK, AR_DATA32_RW);
     load_gdtr(LIMIT_GDT, ADR_GDT);
 #endif
-
     /* IDT<82>Ì<8f><89><8a>ú<89>» */
     for (i = 0; i <= LIMIT_IDT / 8; i++) {
         set_gatedesc(idt + i, 0xfff, 0, 0);
@@ -523,10 +522,7 @@ void _inthandler2c(int *esp)
 		io_out8(PIC0_OCW2, 0x62);
 		data = io_in8(PORT_KEYDAT);
 		fifo_put(&mouse_fifo, data);
-		data = io_in8(PORT_KEYDAT);
-		fifo_put(&mouse_fifo, data);
 		return;
-
 }
 
 void _inthandler27(int *esp)
