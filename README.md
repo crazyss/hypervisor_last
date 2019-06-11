@@ -13,9 +13,15 @@ upstream development the newest feature about HV.
   * openSUSE TW
 
 * Build
-  make
+
+~~~~
+  `make`
+~~~~
 
 * Run Hypervisor
-  make run.x86
+
+~~~~
+  `make run.x86`
+~~~~
 
 
