@@ -97,7 +97,7 @@ void drawing_desktop()
     char buf[50];
     unsigned int memtotal;
     struct MEMMAN *memman = (struct MEMMAN *) (MEMMAN_ADDR - (SYSSEG << 4));
-    memman_init(memman);
+    //memman_init(memman);
     int ret;
 
     static char font_A[16] = {
@@ -127,20 +127,20 @@ void drawing_desktop()
     boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize -  3, xsize -  4, ysize -  3);
     boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
 
-    memtotal=memtest(0x400000, 0xbfffffff);
-    ret = memman_free(memman, 0x00001000, 0x0009e000);
-    if (ret != 0) {
-        putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 1 Failed");
-    }
-    ret = memman_free(memman, 0x00400000, memtotal - 0x00400000);
-    if (ret != 0) {
-        putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 2 Failed");
-    }
-    sprintf(buf,"MEMORY %d MB. %dMB Heap Free.", memtotal / (1024*1024), memman_total(memman) / (1024*1024));
+    //memtotal=memtest(0x400000, 0xbfffffff);
+    //ret = memman_free(memman, 0x00001000, 0x0009e000);
+    //if (ret != 0) {
+    //    putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 1 Failed");
+    //}
+    //ret = memman_free(memman, 0x00400000, memtotal - 0x00400000);
+    //if (ret != 0) {
+    //    putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 2 Failed");
+    //}
+    //sprintf(buf,"MEMORY %d MB. %dMB Heap Free.", memtotal / (1024*1024), memman_total(memman) / (1024*1024));
     putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 0x10!!!");
     putfont8_string(vram,xsize, 8, 28, COL8_FFFFFF,font.Bitmap , buf);
 
-		draw_mouse_on_screen(&mouse_status);
+		//draw_mouse_on_screen(&mouse_status);
 }
 
 void kernelstart(char *arg)
@@ -166,6 +166,7 @@ void kernelstart(char *arg)
 
 
     drawing_desktop();
+
 
 		//draw_mouse_on_screen();
     while(1) {
