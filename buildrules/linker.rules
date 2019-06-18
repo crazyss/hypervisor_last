@@ -3,7 +3,7 @@ LDFLAGS = -T $(LDSCRITP) --print-map -N
 OBJS = $(wildcard $(OBJDIR)/*.o)
 
 helloos: all $(LDSCRITP) $(OBJS) 
-	cd $(OBJDIR);ld *.o -o $@ $(LDFLAGS)
+	cd $(OBJDIR);strip -g -S -d --strip-debug *.o;ld *.o -o $@ $(LDFLAGS)
 
 $(OBJDIR)/helloos.bin: helloos
 	cd $(OBJDIR);objcopy -O binary $< $@
@@ -11,10 +11,17 @@ dump: $(OBJDIR)/helloos.bin
 	objdump -b binary -D -mi8086 $<
 $(OBJDIR)/boot.img: $(OBJDIR)/helloos.bin
 	dd if=$< of=$@ bs=512 count=1024
+run.x86.4mb: $(OBJDIR)/boot.img
+	qemu-kvm -cpu 486 -m 4 -fda $< -net none -no-kvm
+run.x86.256mb: $(OBJDIR)/boot.img
+	qemu-kvm -cpu 486 -m 256 -fda $< -net none -no-kvm
 run.x86: $(OBJDIR)/boot.img
-	kvm -cpu 486 -fda $< -net none -no-kvm
+	qemu-kvm -cpu 486 -fda $< -net none -no-kvm
+run.x86.debug.32m: $(OBJDIR)/boot.img
+	qemu-system-x86_64 -cpu 486 -m 32 -fda $< -net none -no-kvm -monitor stdio
 run.x86.debug: $(OBJDIR)/boot.img
-	kvm -d cpu -fda $< -net none -no-kvm
+	qemu-system-x86_64 -cpu 486 -fda $< -net none -no-kvm -monitor stdio
+run.x86.debug.gdb: $(OBJDIR)/boot.img
+	qemu-system-x86_64 -cpu 486 -fda $< -net none -no-kvm -S -s -monitor stdio
 run.x86.libvirt: $(OBJDIR)/boot.img
 	virt-install --name kos --ram 64 --disk $<,device=floppy,format=raw --boot hd --arch i386
-

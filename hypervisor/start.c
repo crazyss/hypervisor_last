@@ -1,32 +1,65 @@
 #include "common.h"
+#include "fifo8.h"
 
+
+void enable_mouse(void);
+void init_keyboard(void);
+void keyboard_handler(unsigned char data);
+void mouse_handler(unsigned char data);
+extern char mcursor[256];
+
+struct wjn {
+    int t;
+    int w;
+};
+
+struct fifo key_fifo;
+struct fifo mouse_fifo;
+unsigned char keybuffer[32];
+unsigned char mousebuffer[128];
+unsigned char james_global;
+
+struct screen_postion {
+    int x;
+    int y;
+};
+struct screen_postion screen_pos = {
+    .x = 0,
+    .y = 20,
+};
+
+struct mouse_info mouse_status = {0};
 
 void init_gdtidt(void)
 {
-    struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_GDT;
-    struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT;
+    struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) (ADR_GDT - (SYSSEG << 4));
+    struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) (ADR_IDT - (SYSSEG << 4));
+    //struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT;
     int i;
-#if 0
     /* GDT<82>Ì<8f><89><8a>ú<89>» */
     for (i = 0; i <= LIMIT_GDT / 8; i++) {
         set_segmdesc(gdt + i, 0, 0, 0);
     }
-    set_segmdesc(gdt + 1, 0xffffffff,   0x00000000, AR_DATA32_RW);
-    set_segmdesc(gdt + 2, LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER);
+#if 0
+    set_segmdesc(gdt + 2, 0xffffffff,   0x00010000, AR_CODE32_ER);
+    set_segmdesc(gdt + 3, LIMIT_BOTPAK, ADR_BOTPAK, AR_DATA32_RW);
     load_gdtr(LIMIT_GDT, ADR_GDT);
 #endif
-
     /* IDT<82>Ì<8f><89><8a>ú<89>» */
     for (i = 0; i <= LIMIT_IDT / 8; i++) {
-        set_gatedesc(idt + i, 0, 0, 0);
+        set_gatedesc(idt + i, 0xfff, 0, 0);
     }
     load_idtr(LIMIT_IDT, ADR_IDT);
 
-    /* IDT<82>Ì<90>Ý<92>è */
-    set_gatedesc(idt + 0x21, (int) inthandler21, 2 * 8, AR_INTGATE32);
-    set_gatedesc(idt + 0x27, (int) inthandler27, 2 * 8, AR_INTGATE32);
-    set_gatedesc(idt + 0x2c, (int) inthandler2c, 2 * 8, AR_INTGATE32);
+    
 
+    set_gatedesc(idt + 0x21, (int) inthandler21, 2 * 8, AR_INTGATE32);
+#if 1
+    /* IDT<82>Ì<90>Ý<92>è */
+    set_gatedesc(idt + 0x27, (int) inthandler27, 2 * 8, AR_INTGATE32);
+#endif
+
+    set_gatedesc(idt + 0x2c, (int) inthandler2c, 2 * 8, AR_INTGATE32);
     return;
 }
 
@@ -55,30 +88,26 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar)
     gd->offset_high  = (offset >> 16) & 0xffff;
     return;
 }
-
-
-void kernelstart(char *arg)
+void drawing_desktop()
 {
-
-    init_palette();
-    char *vram = (char *)0xa0000;
+    unsigned char *vram = VRAM_ADDR;
     unsigned short xsize,ysize;
     xsize=320;
     ysize=200;
-
-    char *mcursor[256];
-    int mx,my;
-
-
-    init_gdtidt();
-    init_pic();
-    io_sti();
+    char buf[50];
+    unsigned int memtotal;
+    struct MEMMAN *memman = (struct MEMMAN *) (MEMMAN_ADDR - (SYSSEG << 4));
+    memman_init(memman);
+    int ret;
 
     static char font_A[16] = {
         0x00, 0x18, 0x18, 0x18, 0x18, 0x24, 0x24, 0x24,
         0x24, 0x7e, 0x42, 0x42, 0x42, 0xe7, 0x00, 0x00
     };
-
+		/*init mouse global data*/
+    mouse_status.mx = (xsize - 16) / 2;
+    mouse_status.my = (ysize - 28 - 16) / 2;
+    init_mouse_cursor8(mcursor, COL8_008484);
 
     boxfill8(vram, xsize, COL8_008484,  0,         0,          xsize -  1, ysize - 29);
     boxfill8(vram, xsize, COL8_C6C6C6,  0,         ysize - 28, xsize -  1, ysize - 28);
@@ -98,67 +127,120 @@ void kernelstart(char *arg)
     boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize -  3, xsize -  4, ysize -  3);
     boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
 
-
-    //putfont8(vram, xsize,  8, 8, COL8_FFFFFF, font.Bitmap + ('A' - 31) * 16);
-//    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hypervisor 2.1 Safety profile!!!");
-    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "LINX-INFO !!!");
-    //char buf[10];
-    //sprintf(buf,"%d",vram);
-    //putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , buf);
-
-    /*draw a mouse on cetern screen */
-    init_mouse_cursor8(mcursor, COL8_008484);
-    mx = (xsize - 16) / 2;
-    my = (ysize - 28 - 16) / 2;
-    putblock8_8(vram, xsize, 16, 16, mx, my, mcursor, 16);
-
-
-#if 0
-    {
-        int x,y;
-        int i=0;
-        const unsigned char (*pking)[16] = font.Bitmap;
-        for (y=10;y<190;y+=30) {
-            for (x=10;x<310;x+=10) {
-                putfont8(vram, xsize, x, y, COL8_FFFFFF, pking+i);
-                i++;
-                if (i > 97)
-                    goto out;
-            }
-        }
+    memtotal=memtest(0x400000, 0xbfffffff);
+    ret = memman_free(memman, 0x00001000, 0x0009e000);
+    if (ret != 0) {
+        putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 1 Failed");
     }
-out:
-
-#endif
-
-
-    //  putfont8_asc(vram, xsize, 10, 10, COL8_FFFFFF, 'c');
-
-
-#if 0
-    int i,j;
-    int k=0;
-    unsigned char *font = __font_bitmap__;
-    for(i=10;i<10;i++){
-        for (j=10;j<80;i+=8) {
-            putfont8(vram, xsize, i, j, COL8_FFFFFF, font);
-            font += ;
-        }
-
+    ret = memman_free(memman, 0x00400000, memtotal - 0x00400000);
+    if (ret != 0) {
+        putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 2 Failed");
     }
-#endif
+    sprintf(buf,"MEMORY %d MB. %dMB Heap Free.", memtotal / (1024*1024), memman_total(memman) / (1024*1024));
+    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 0x10!!!");
+    putfont8_string(vram,xsize, 8, 28, COL8_FFFFFF,font.Bitmap , buf);
+
+		draw_mouse_on_screen(&mouse_status);
+}
+
+void kernelstart(char *arg)
+{
+
+    init_palette();
+
+    init_gdtidt();
+    init_pic();
+		fifo_init(&key_fifo, 32, keybuffer);
+		fifo_init(&mouse_fifo, 128, mousebuffer);
+    io_sti();
 
 
-    io_out8(PIC1_DATA, 0xf9); /* PIC1<82>Æ<83>L<81>[<83>{<81>[<83>h<82>ð<8b><96><89>Â(11111001) */
-    io_out8(PIC2_DATA, 0xef); /* <83>}<83>E<83>X<82>ð<8b><96><89>Â(11101111) */
+
+    io_out8(PIC0_DATA, 0xf9); /* PIC0<82>Æ<83>L<81>[<83>{<81>[<83>h<82>ð<8b><96><89>Â(11111001) */
+    io_out8(PIC1_DATA, 0xef); /* <83>}<83>E<83>X<82>ð<8b><96><89>Â(11101111) */
+
+		init_keyboard();
+
+		enable_mouse();
 
 
 
-    while(1)
-        io_hlt();
+    drawing_desktop();
+
+		//draw_mouse_on_screen();
+    while(1) {
+			io_cli();
+			if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0)	{
+				io_stihlt();
+			}else {
+					if (fifo_status(&key_fifo) > 0) {
+						unsigned char data = fifo_get(&key_fifo);
+						io_sti();
+						keyboard_handler(data);
+					}else if (fifo_status(&mouse_fifo) > 0) {
+						unsigned char data = fifo_get(&mouse_fifo);
+						io_sti();
+						mouse_handler(data);
+					}
+			}
+		}
+
     return ; 
 }
 
+
+#define PORT_KEYDAT				0x0060
+#define PORT_KEYSTA				0x0064
+#define PORT_KEYCMD				0x0064
+#define KEYSTA_SEND_NOTREADY	0x02
+#define KEYCMD_WRITE_MODE		0x60
+#define KBC_MODE				0x47
+
+void wait_KBC_sendready(void)
+{
+	/* 等待键盘控制电路准备完毕 */
+	for (;;) {
+		if ((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
+			break;
+		}
+	}
+	return;
+}
+
+void init_keyboard(void)
+{
+	/* 初始化键盘控制电路 */
+	wait_KBC_sendready();
+	io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
+	wait_KBC_sendready();
+	io_out8(PORT_KEYDAT, KBC_MODE);
+	return;
+}
+
+#define KEYCMD_SENDTO_MOUSE		0xd4
+#define MOUSECMD_ENABLE			0xf4
+
+void enable_mouse(void)
+{
+	/* 激活鼠标 */
+//	unsigned char status;
+//	wait_KBC_sendready();
+//	io_out8(PORT_KEYCMD, 0x20);
+//	wait_KBC_sendready();
+//	status = ((char)io_in8(PORT_KEYDAT)|0x2);
+//	status &= 0xDF;
+//	wait_KBC_sendready();
+//	io_out8(PORT_KEYCMD, 0x60);
+//	wait_KBC_sendready();
+//	io_out8(PORT_KEYDAT, status);
+//
+//
+	wait_KBC_sendready();
+	io_out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
+	wait_KBC_sendready();
+	io_out8(PORT_KEYDAT, MOUSECMD_ENABLE);
+	return; /* 顺利的话，键盘控制器会返回ACK(0xfa) */
+}
 
 #if 0
 void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *font_bitmap)
@@ -197,18 +279,38 @@ void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *
 }
 
 
-void putfont8_string(char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, char * string)
+void putfont8_string(unsigned char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, unsigned char * string)
 {
     char ch ;
-    for (y=10;y<190;y+=30) {
-        for (x=10;x<310;x+=10) {
+    int x1,y1;
+    if (x == 0)
+        x1 = screen_pos.x;
+    else
+        x1 = x;
+    if (y == 0)
+        y1 = screen_pos.y;
+    else
+        y1 = y;
+
+    for (;y1<190;y1+=30) {
+        for (;x1<310;x1+=10) {
             ch = *string;
             if (ch == 0)
-                return;
-            putfont8(vram, xsize,  x, y, color, font_bitmap + (ch - 31) * 16);
+                break;
+            putfont8(vram, xsize,  x1, y1, color, font_bitmap + (ch - 31) * 16);
             string++;
+
+        }
+        if (x == 0 && y == 0) {
+            screen_pos.x += 2;
+            if (screen_pos.x >= 300) {
+                screen_pos.y += 12;
+                screen_pos.x = 0;
+            }
         }
     }
+    //screen_pos.y += 1;
+
 }
 
 
@@ -262,77 +364,170 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
     return;
 }
 
-int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
-{
-    char *str,*end;
-    str = buf;
-    end = buf + size;
-
-    if (end < buf) {
-        end = ((void*) -1);
-        size = end - buf;
-    }
-    while(*fmt) {
-        const char *old_fmt = fmt;
-
-    }
-}
-
 
 void init_pic(void)
 {
-    io_out8(PIC1_DATA,  0xff); 
-    io_out8(PIC2_DATA,  0xff); 
 
+    io_out8(PIC1_OCW1,  0xFF); 
+    io_out8(PIC0_OCW1,  0xFF); 
+
+    io_out8(PIC0_COMMAND,   0x11);
     io_out8(PIC1_COMMAND,   0x11);
-    io_out8(PIC1_DATA, 0x20  );
-    io_out8(PIC1_DATA, 1 << 2);
+
+
+    io_out8(PIC1_DATA, 0x28  );
+    io_out8(PIC0_DATA, 0x20  );
+
+    io_out8(PIC0_DATA, 1 << 2);
+    io_out8(PIC1_DATA, 2);
+
+    io_out8(PIC0_DATA, 0x01); /*8086 mode for both*/
     io_out8(PIC1_DATA, 0x01);
 
-    io_out8(PIC2_COMMAND,   0x11);
-    io_out8(PIC2_DATA, 0x28  );
-    io_out8(PIC2_DATA, 1 << 2);
-    io_out8(PIC2_DATA, 0x01);
-
-    io_out8(PIC1_DATA,  0xfb); 
-    io_out8(PIC2_DATA,  0xff); 
+    io_out8(PIC0_DATA,  0xfb); 
+    io_out8(PIC1_DATA,  0xff); 
 
     return;
 }
 
 
-void _inthandler21(int *esp)
+#define PORT_KEYDAT 0x0060
+void keyboard_handler(unsigned char data)
 {
-    char *vram = (char *)0xa0000;
+    unsigned char *vram = VRAM_ADDR;
     unsigned short xsize,ysize;
+    unsigned char out_buffer[3];
+    unsigned char t;
     xsize=320;
     ysize=200;
+    if (data >= 0x81 || data == -1)
+        return ;
+    out_buffer[0] = scancode[data];
+    if (out_buffer[0] == 0) {
+#if 1
+        t=(data & 0xf0)>>4;
+        if (t >= 0xa && t <= 0xf) {
+            out_buffer[0] = 'A' + t - 10; 
+        }else {
+            out_buffer[0] = '0' + t;
+        }
+        t=(data & 0xf);
+        if (t >= 0xA && t <= 0xF) {
+            out_buffer[1] = 'A' + t - 10; 
+        }else if (t >= 0 && t <= 9){
+            out_buffer[1] = '0' + t;
+        }
+        out_buffer[2]=0;
 
-    //putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 21 (IRQ-1) : PS/2 keyboard");
-    putfont8_string((char*)0xa0000,320, 8, 40, COL8_FFFFFF,font.Bitmap , "INT 21 (IRQ-1) : PS/2 keyboard!!!");
-    for (;;) {
-        io_hlt();
+        boxfill8(vram, xsize, COL8_C6C6C6,  0,         ysize - 28, xsize -  1, ysize - 28);
+        boxfill8(vram, xsize, COL8_FFFFFF,  0,         ysize - 27, xsize -  1, ysize - 27);
+        boxfill8(vram, xsize, COL8_C6C6C6,  0,         ysize - 26, xsize -  1, ysize -  1);
+
+        boxfill8(vram, xsize, COL8_FFFFFF,  3,         ysize - 24, 59,         ysize - 24);
+        boxfill8(vram, xsize, COL8_FFFFFF,  2,         ysize - 24,  2,         ysize -  4);
+        boxfill8(vram, xsize, COL8_848484,  3,         ysize -  4, 59,         ysize -  4);
+        boxfill8(vram, xsize, COL8_848484, 59,         ysize - 23, 59,         ysize -  5);
+        boxfill8(vram, xsize, COL8_000000,  2,         ysize -  3, 59,         ysize -  3);
+        boxfill8(vram, xsize, COL8_000000, 60,         ysize - 24, 60,         ysize -  3);
+
+        boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 24, xsize -  4, ysize - 24);
+        boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 23, xsize - 47, ysize -  4);
+        boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize -  3, xsize -  4, ysize -  3);
+        boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
+
+        putfont8_string(vram,xsize, 283, 180, COL8_00FF00,font.Bitmap , out_buffer);
+#endif
+        return;
+    }
+    out_buffer[1] = 0;
+
+        
+    putfont8_string(vram,xsize, 0, 0, COL8_FFFFFF,font.Bitmap , out_buffer);
+
+    if (data == 0x30 || data == 0xB0) {
+        putfont8_string(vram,xsize, 8, 100, COL8_FFFFFF,font.Bitmap , (unsigned char *)"May the source be with you!");
     }
 }
 
-void _inthandler2c(int *esp)
-{   
-    char *vram = (char *)0xa0000;
+void _inthandler21(int *esp)
+{
+    unsigned char data;
+    io_out8(PIC0_COMMAND, 0x61);
+    data = io_in8(PORT_KEYDAT);
+		fifo_put(&key_fifo, data);
+		return;
+}
+
+void mouse_handler(unsigned char data)
+{
+    unsigned char *vram = VRAM_ADDR;
     unsigned short xsize,ysize;
+		char buffer[20];
     xsize=320;
     ysize=200;
-
-
-    //putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 2C (IRQ-12) : PS/2 mouse");
-    putfont8_string(vram,xsize, 8, 80, COL8_FFFFFF,font.Bitmap , "INT 2C (IRQ-12) : PS/2 mouse!!!");
-    for (;;) {
-        io_hlt();
-    }
+		if (mouse_status.phase == 0) {
+			if (data == 0xfa) {
+					mouse_status.phase = 1;
+			}
+			return ;
+		}else if (mouse_status.phase == 1) {
+			if ((data & 0xc8) == 0x08) {
+				mouse_status.buf[0] = data;
+				mouse_status.phase = 2;
+			}
+			return;
+		}else if (mouse_status.phase == 2) {
+			mouse_status.buf[1] = data;
+			mouse_status.phase = 3;
+			return ;
+		}else if (mouse_status.phase == 3) {
+			mouse_status.buf[2] = data;
+			mouse_status.phase = 1;
+			mouse_status.btn = mouse_status.buf[0] & 0x07;
+			mouse_status.x = mouse_status.buf[1];
+			mouse_status.y = mouse_status.buf[2];
+			
+			if ((mouse_status.buf[0] & 0x10) != 0) {
+				mouse_status.x |= 0xffffff00;
+			}
+			if ((mouse_status.buf[0] & 0x20) != 0) {
+				mouse_status.y |= 0xffffff00;
+			}
+			mouse_status.y = -mouse_status.y;
+			boxfill8(VRAM_ADDR, xsize, COL8_008484, mouse_status.mx, mouse_status.my, mouse_status.mx + 15, mouse_status.my + 15);
+			//mouse_status.mx += mouse_status.x;
+			mouse_status.mx += mouse_status.x;
+			mouse_status.my += mouse_status.y;
+			if (mouse_status.mx < 0) {
+				mouse_status.mx = 0;
+			}
+			if (mouse_status.my < 0) {
+				mouse_status.my = 0;
+			}
+			if (mouse_status.mx > xsize - 16) {
+				mouse_status.mx = xsize - 16;
+			}
+			if (mouse_status.my > ysize - 16) {
+				mouse_status.my = ysize - 16;
+			}
+			draw_mouse_on_screen(&mouse_status);
+			return;
+		}
+		return;
+}
+void _inthandler2c(int *esp)
+{   
+		unsigned char data;
+		io_out8(PIC1_OCW2, 0x64);
+		io_out8(PIC0_OCW2, 0x62);
+		data = io_in8(PORT_KEYDAT);
+		fifo_put(&mouse_fifo, data);
+		return;
 }
 
 void _inthandler27(int *esp)
 {
-    io_out8(PIC1_COMMAND, 0x67); /* IRQ-07<8e>ó<95>t<8a>®<97>¹<82>ðPIC<82>É<92>Ê<92>m(7-1<8e>Q<8f>Æ) */
+    io_out8(PIC0_COMMAND, 0x67); /* IRQ-07<8e>ó<95>t<8a>®<97>¹<82>ðPIC<82>É<92>Ê<92>m(7-1<8e>Q<8f>Æ) */
     return;
 }
 

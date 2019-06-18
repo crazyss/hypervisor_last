@@ -4,21 +4,27 @@
 
 void io_hlt(void); 
 void io_cli(void); 
+void io_sti(void); 
+void io_stihlt(void); 
 void io_out8(int port, int data); 
+int io_in8(int port); 
 int io_load_eflags(void); 
 void io_store_eflags(int eflags); 
- 
+
 void init_palette(void); 
 void set_palette(int start, int end, unsigned char *rgb); 
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1); 
- 
+
 void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *font);
-void putfont8_string(char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, char * string);
+void putfont8_string(unsigned char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, unsigned char * string);
 
 void init_pic(void);
 
 extern struct bitmap_font font;
 
+#define SYSSEG  0x1000
+#define MEMMAN_ADDR (char *)(0x003c0000)
+#define VRAM_ADDR (unsigned char *)((0xa0000)-(SYSSEG << 4))
 #define COL8_000000     0
 #define COL8_FF0000     1
 #define COL8_00FF00     2
@@ -58,12 +64,26 @@ void load_idtr(int limit, int addr);
 
 /*8259 interrupt controller*/
 
-#define PIC1    0x20
-#define PIC2    0xa0
+#define PIC0    0x20
+#define PIC1    0xa0
+#define PIC0_OCW1				PIC0+1
+#define PIC0_OCW2				PIC0
+#define PIC1_OCW1    		PIC1+1
+#define PIC1_OCW2    		PIC1
+#define PIC0_IMR				PIC0_OCW1
+#define PIC1_IMR				PIC1_OCW1    		
+#define PIC0_ICW1				PIC0
+#define PIC1_ICW1				PIC1
+#define PIC0_ICW2				PIC0+1
+#define PIC1_ICW2				PIC1+1
+#define PIC0_ICW3				PIC0+1
+#define PIC1_ICW3				PIC1+1
+#define PIC0_ICW4				PIC0+1
+#define PIC1_ICW4				PIC1+1
+#define PIC0_COMMAND    PIC0
+#define PIC0_DATA       (PIC0+1)
 #define PIC1_COMMAND    PIC1
 #define PIC1_DATA       (PIC1+1)
-#define PIC2_COMMAND    PIC2
-#define PIC2_DATA       (PIC2+2)
 
 
 
@@ -82,3 +102,13 @@ void load_idtr(int limit, int addr);
 extern void inthandler21(void);
 extern void inthandler27(void);
 extern void inthandler2c(void);
+
+struct mouse_info {
+	char phase;
+	unsigned char buf[3];
+	int x, y, btn;
+	int mx, my;
+};
+void draw_mouse_on_screen(struct mouse_info*);
+void init_mouse_cursor8(char *, char);
+extern char scancode [];

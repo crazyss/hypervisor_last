@@ -11,7 +11,6 @@ memcpy:
     ret
 
 hypervisor:
- 
     movl    $(3 * 8), %eax
     movl    %eax, %fs
     movl    %eax, %ds
@@ -20,8 +19,9 @@ hypervisor:
     movl    %eax, %ss
 
 #init stack
-    movl    $0x3fffff,  %esp
+    movl    $0xFFFF0,  %esp
 #jump into the C
+
     jmp     kernelstart
 
 #
@@ -46,3 +46,5 @@ msg:
     .asciz "Hypervisor"
 len_msg:
     .int . - msg
+
+bootpack:
