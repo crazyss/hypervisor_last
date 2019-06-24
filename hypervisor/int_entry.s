@@ -5,6 +5,7 @@
 .global inthandler27
 .global inthandler2c
 
+#for keyboard
 inthandler21:
     push    %es
     push    %ds
@@ -38,6 +39,7 @@ inthandler27:
     iretl
 
     
+#for mouse
 inthandler2c:
     push    %es
     push    %ds
