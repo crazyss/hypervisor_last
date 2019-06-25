@@ -453,7 +453,7 @@ void keyboard_handler(unsigned char data)
 void _inthandler21(int *esp)
 {
     unsigned char data;
-    io_out8(PIC0_COMMAND, 0x61);
+    io_out8(PIC0_COMMAND, PIC_EOI);
     data = io_in8(PORT_KEYDAT);
 		fifo_put(&key_fifo, data);
 		return;
