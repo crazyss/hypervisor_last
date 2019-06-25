@@ -6,6 +6,7 @@ void enable_mouse(void);
 void init_keyboard(void);
 void keyboard_handler(unsigned char data);
 void mouse_handler(unsigned char data);
+void serial_handler(unsigned char data);
 extern char mcursor[256];
 
 struct wjn {
@@ -15,8 +16,10 @@ struct wjn {
 
 struct fifo key_fifo;
 struct fifo mouse_fifo;
+struct fifo serial_fifo;
 unsigned char keybuffer[32];
 unsigned char mousebuffer[128];
+unsigned char serialbuffer[32];
 unsigned char james_global;
 
 struct screen_postion {
@@ -51,7 +54,7 @@ void init_gdtidt(void)
     }
     load_idtr(LIMIT_IDT, ADR_IDT);
 
-    
+    set_gatedesc(idt + 0x24, (int) inthandler24, 2 * 8, AR_INTGATE32);
 
     set_gatedesc(idt + 0x21, (int) inthandler21, 2 * 8, AR_INTGATE32);
 #if 1
@@ -96,8 +99,8 @@ void drawing_desktop()
     ysize=200;
     char buf[50];
     unsigned int memtotal;
-    struct MEMMAN *memman = (struct MEMMAN *) (MEMMAN_ADDR - (SYSSEG << 4));
-    //memman_init(memman);
+    struct MEMMAN *memman = (struct MEMMAN *) (MEMMAN_ADDR);
+    memman_init(memman);
     int ret;
 
     static char font_A[16] = {
@@ -127,11 +130,11 @@ void drawing_desktop()
     boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize -  3, xsize -  4, ysize -  3);
     boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
 
-    //memtotal=memtest(0x400000, 0xbfffffff);
-    //ret = memman_free(memman, 0x00001000, 0x0009e000);
-    //if (ret != 0) {
-    //    putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 1 Failed");
-    //}
+    memtotal=memtest(0x400000, 0xbfffffff);
+    ret = memman_free(MEMMAN_ADDR, 0x00100000, 0x00100000);
+    if (ret != -1) {
+        putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 1 Failed");
+    }
     //ret = memman_free(memman, 0x00400000, memtotal - 0x00400000);
     //if (ret != 0) {
     //    putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 2 Failed");
@@ -140,7 +143,6 @@ void drawing_desktop()
     putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 0x10!!!");
     putfont8_string(vram,xsize, 8, 28, COL8_FFFFFF,font.Bitmap , buf);
 
-		//draw_mouse_on_screen(&mouse_status);
 }
 
 void kernelstart(char *arg)
@@ -152,11 +154,12 @@ void kernelstart(char *arg)
     init_pic();
 		fifo_init(&key_fifo, 32, keybuffer);
 		fifo_init(&mouse_fifo, 128, mousebuffer);
+		fifo_init(&serial_fifo, 32, serialbuffer);
     io_sti();
 
 
 
-    io_out8(PIC0_DATA, 0xf9); /* PIC0<82>Æ<83>L<81>[<83>{<81>[<83>h<82>ð<8b><96><89>Â(11111001) */
+    io_out8(PIC0_DATA, 0xe9); /* PIC0<82>Æ<83>L<81>[<83>{<81>[<83>h<82>ð<8b><96><89>Â(11101001) */
     io_out8(PIC1_DATA, 0xef); /* <83>}<83>E<83>X<82>ð<8b><96><89>Â(11101111) */
 
 		init_keyboard();
@@ -168,10 +171,9 @@ void kernelstart(char *arg)
     drawing_desktop();
 
 
-		//draw_mouse_on_screen();
     while(1) {
 			io_cli();
-			if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0)	{
+			if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0 && fifo_status(&serial_fifo) <= 0)	{
 				io_stihlt();
 			}else {
 					if (fifo_status(&key_fifo) > 0) {
@@ -182,10 +184,13 @@ void kernelstart(char *arg)
 						unsigned char data = fifo_get(&mouse_fifo);
 						io_sti();
 						mouse_handler(data);
+					}else if (fifo_status(&serial_fifo) > 0) {
+						unsigned char data = fifo_get(&serial_fifo);
+						io_sti();
+                        write_serial(data);
 					}
 			}
-		}
-
+	}
     return ; 
 }
 
@@ -456,6 +461,7 @@ void _inthandler21(int *esp)
     io_out8(PIC0_COMMAND, 0x61);
     data = io_in8(PORT_KEYDAT);
 		fifo_put(&key_fifo, data);
+        write_serial('a');
 		return;
 }
 
@@ -516,11 +522,19 @@ void mouse_handler(unsigned char data)
 		}
 		return;
 }
+void _inthandler24(int *esp)
+{   
+		unsigned char data;
+		io_out8(PIC0_COMMAND, 0x20);
+		data = read_serial();
+		fifo_put(&serial_fifo, data);
+		return;
+}
 void _inthandler2c(int *esp)
 {   
 		unsigned char data;
-		io_out8(PIC1_OCW2, 0x64);
-		io_out8(PIC0_OCW2, 0x62);
+		io_out8(PIC1_COMMAND, 0x64);
+		io_out8(PIC0_COMMAND, 0x62);
 		data = io_in8(PORT_KEYDAT);
 		fifo_put(&mouse_fifo, data);
 		return;
