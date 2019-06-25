@@ -84,6 +84,8 @@ void load_idtr(int limit, int addr);
 #define PIC0_DATA       (PIC0+1)
 #define PIC1_COMMAND    PIC1
 #define PIC1_DATA       (PIC1+1)
+#define PIC_EOI		0x20		/* End-of-interrupt command code */
+
 
 
 
