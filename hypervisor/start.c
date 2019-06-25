@@ -1,5 +1,6 @@
 #include "common.h"
 #include "fifo8.h"
+#include "serial.h"
 
 
 void enable_mouse(void);
@@ -171,6 +172,8 @@ void kernelstart(char *arg)
     drawing_desktop();
 
 
+    io_stihlt();
+    write_string_serial("Hackweek18");
     while(1) {
 			io_cli();
 			if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0 && fifo_status(&serial_fifo) <= 0)	{
@@ -461,7 +464,6 @@ void _inthandler21(int *esp)
     io_out8(PIC0_COMMAND, PIC_EOI);
     data = io_in8(PORT_KEYDAT);
 		fifo_put(&key_fifo, data);
-        write_serial('a');
 		return;
 }
 

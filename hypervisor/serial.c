@@ -30,3 +30,11 @@ void write_serial(char a) {
  
    io_out8(PORT,a);
 }
+int write_string_serial(char *string) {
+
+    int i;
+    for (i=0;string[i]!='\0';i++) {
+        write_serial(string[i]);
+    }
+    return i;
+}

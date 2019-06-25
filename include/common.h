@@ -1,3 +1,5 @@
+#ifndef __COMMON_H
+#define __COMMON_H
 #include "font.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -119,3 +121,4 @@ struct mouse_info {
 void draw_mouse_on_screen(struct mouse_info*);
 void init_mouse_cursor8(char *, char);
 extern char scancode [];
+#endif
