@@ -1,15 +1,15 @@
 #ifndef __MM_H
 #define __MM_H
 
-#define MEMMAN_FREES    4090   /*about 32KB*/
+#define MEMMAN_FREES    4090	/*about 32KB */
 
 struct FREEINFO {
-    unsigned int addr, size;
+	unsigned int addr, size;
 };
 
 struct MEMMAN {
-    int frees, maxfrees, lostsize, losts;
-    struct FREEINFO free[MEMMAN_FREES];
+	int frees, maxfrees, lostsize, losts;
+	struct FREEINFO free[MEMMAN_FREES];
 };
 
 void memman_init(struct MEMMAN *man);
