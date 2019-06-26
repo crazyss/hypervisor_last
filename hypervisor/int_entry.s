@@ -6,6 +6,7 @@
 .global inthandler2c
 .global inthandler24
 
+
 inthandler24:
     push    %es
     push    %ds

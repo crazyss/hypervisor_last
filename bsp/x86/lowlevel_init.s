@@ -81,6 +81,35 @@ _lowlevel_init:
     nop;
     nop;
     
+#Get memory map and store memroy table start from  0x00098004, each entry has 20bytes data but
+#currently we reserve 0x20 bytes for each entry
+#Each entry has :
+#First uint64_t = Base address
+#Second uint64_t = Length of "region" (if this value is 0, ignore the entry)
+#Next uint32_t = Region "type"
+#   Type 1: Usable (normal) RAM
+#   Type 2: Reserved - unusable
+#   Type 3: ACPI reclaimable memory
+#   Type 4: ACPI NVS memory
+#   Type 5: Area containing bad memory
+#Set register base https://wiki.osdev.org/Detecting_Memory_(x86)
+    mov $0x8004, %di
+    xor %ebx, %ebx
+    mov $0x0534D4150, %edx
+    mov $0xe820,%eax
+    mov $24, %ecx
+    int $0x15
+    #call again
+get_next:
+    add $0x20, %di
+    mov $0xe820,%eax
+    mov $24, %ecx
+    int $0x15
+    cmp $0, %ebx /*ebx=0 means no other entry*/
+    jnz get_next
+#for debug
+#    hlt
+
 #Inital Serial Device 1
 #com1 at 0x3F8
 
