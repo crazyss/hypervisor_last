@@ -22,22 +22,6 @@ inthandler24:
     pop     %es
     iretl
 
-inthandler24:
-    push    %es
-    push    %ds
-    pushal
-    movl    %esp,%eax
-    pushl    %eax
-    mov     %ss,%ax
-    mov     %ax,%ds
-    mov     %ax,%es
-    call    _inthandler24
-    popl     %eax
-    popal
-    pop     %ds
-    pop     %es
-    iretl
-
 #for keyboard
 inthandler21:
     push    %es
