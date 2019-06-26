@@ -2,7 +2,6 @@
 #define _SERIAL_H
 #include "common.h"
 
-
 int serial_received();
 char read_serial();
 int is_transmit_empty();

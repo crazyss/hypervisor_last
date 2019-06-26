@@ -2,9 +2,9 @@
 
 	/// bitmap font structure
 struct bitmap_font {
-	unsigned char Width;		///< max. character width
-	unsigned char Height;		///< character height
-	unsigned short Chars;		///< number of characters in font
+	unsigned char Width;	///< max. character width
+	unsigned char Height;	///< character height
+	unsigned short Chars;	///< number of characters in font
 	const unsigned char *Widths;	///< width of each character
 	const unsigned short *Index;	///< encoding to character index
 	const unsigned char *Bitmap;	///< bitmap of all characters
