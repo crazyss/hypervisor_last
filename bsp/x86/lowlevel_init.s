@@ -86,24 +86,31 @@ _lowlevel_init:
 
 #Disable all interrupt
 	movb $0x0, %al
-	out %al, $(0x3f8+1)
+	movw $(0x3f8+1), %dx
+	out %al, %dx
 #Enable DLAB bit for baud bits
 	movb $0x80, %al
-	out %al, $(0x3f8+3) 
+	movw $(0x3f8+3), %dx
+	out %al, %dx
 #Write 1 to divisor for 115200 bits
 	movb $1, %al
-	out %al, $(0x3f8)  
+	movw $(0x3f8), %dx
+	out %al, %dx
 	movb $0, %al
-	out %al, $(0x3f8+1)
+	movw $(0x3f8+1), %dx
+	out %al, %dx
 #8 bits, no parity, one stop bit
 	movb $0x3, %al
-	out %al, $(0x3f8+3)
+	movw $(0x3f8+3), %dx
+	out %al, %dx
 #enable FIFO, clear them, with 14-byte threshold
 	movb $0xc7, %al
-	out %al, $(0x3f8+2)
+	movw $(0x3f8+2), %dx
+	out %al, %dx
 #IRQs enabled, RTS/DSR set
 	movb $0x0B, %al
-	out %al, $(0x3f8+4)
+	movw $(0x3f8+4), %dx
+	out %al, %dx
 
 
 #######################################################
