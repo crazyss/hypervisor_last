@@ -173,7 +173,7 @@ void kernelstart(char *arg)
 
 
     io_stihlt();
-    write_string_serial("Hackweek18");
+    write_string_serial("Hackweek18\r\n");
     while(1) {
 			io_cli();
 			if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0 && fifo_status(&serial_fifo) <= 0)	{

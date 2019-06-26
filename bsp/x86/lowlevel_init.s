@@ -85,7 +85,7 @@ _lowlevel_init:
 #com1 at 0x3F8
 
 #Disable all interrupt
-	movb $0x0, %al
+	movb $0x1, %al
 	movw $(0x3f8+1), %dx
 	out %al, %dx
 #Enable DLAB bit for baud bits
