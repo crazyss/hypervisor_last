@@ -1,3 +1,5 @@
+#ifndef __COMMON_H
+#define __COMMON_H
 #include "font.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -23,7 +25,7 @@ void init_pic(void);
 extern struct bitmap_font font;
 
 #define SYSSEG  0x1000
-#define MEMMAN_ADDR (char *)(0x003c0000)
+#define MEMMAN_ADDR (char *)((0x003c0000) - (SYSSEG << 4))
 #define VRAM_ADDR (unsigned char *)((0xa0000)-(SYSSEG << 4))
 #define COL8_000000     0
 #define COL8_FF0000     1
@@ -101,9 +103,14 @@ void load_idtr(int limit, int addr);
 #define AR_CODE32_ER    0x409a
 #define AR_INTGATE32    0x008e
 
+
+/*Serial PORT*/
+#define PORT 0x3F8
+
 extern void inthandler21(void);
 extern void inthandler27(void);
 extern void inthandler2c(void);
+extern void inthandler24(void);
 
 struct mouse_info {
 	char phase;
@@ -114,3 +121,4 @@ struct mouse_info {
 void draw_mouse_on_screen(struct mouse_info*);
 void init_mouse_cursor8(char *, char);
 extern char scancode [];
+#endif

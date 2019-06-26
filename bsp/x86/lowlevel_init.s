@@ -26,46 +26,58 @@ _lowlevel_init:
 
 #Iniialization sequence 8259a
     movb $0x11, %al
-    out %al,    $0x20
+	movw $0x20, %dx
+    out %al,    %dx
     nop;
     nop;
-    out %al,    $0xA0
+	movw $0xA0, %dx
+    out %al,    %dx
     nop;
     nop;
     movb $0x20, %al
-    out %al, $0x21
+	movw $0x21, %dx
+    out %al,    %dx
     nop;
     nop;
     movb $0x28, %al
-    out %al, $0xA1
+	movw $0xA1, %dx
+    out %al,    %dx
     nop;
     nop;
     movb $0x4,  %al
-    out %al,  $0x21
+	movw $0x21, %dx
+    out %al,    %dx
     nop;
     nop;
     movb $0x2,  %al
-    out %al,  $0xA1
+	movw $0xA1, %dx
+    out %al,    %dx
     nop;
     nop;
     movb $0x01, %al
-    out %al,    $0x21
-    out %al,    $0xA1
+	movw $0x21, %dx
+    out %al,    %dx
+	movw $0xA1, %dx
+    out %al,    %dx
 
     movb $0xFF, %al
-    out %al,    $0x21
+	movw $0x21, %dx
+    out %al,    %dx
     nop;
     nop;
-    out %al,    $0xA1
+	movw $0xA1, %dx
+    out %al,    %dx
     nop;
     nop;
     
-    movb $0xF9, %al
-    out %al,    $0x21
+    movb $0xfb, %al
+	movw $0x21, %dx
+    out %al,    %dx
     nop;
     nop;
-    movb $0xef, %al
-    out %al,    $0xA1
+    movb $0xff, %al
+	movw $0xA1, %dx
+    out %al,    %dx
     nop;
     nop;
     
@@ -97,6 +109,37 @@ get_next:
     jnz get_next
 #for debug
 #    hlt
+
+#Inital Serial Device 1
+#com1 at 0x3F8
+
+#Disable all interrupt
+	movb $0x1, %al
+	movw $(0x3f8+1), %dx
+	out %al, %dx
+#Enable DLAB bit for baud bits
+	movb $0x80, %al
+	movw $(0x3f8+3), %dx
+	out %al, %dx
+#Write 1 to divisor for 115200 bits
+	movb $1, %al
+	movw $(0x3f8), %dx
+	out %al, %dx
+	movb $0, %al
+	movw $(0x3f8+1), %dx
+	out %al, %dx
+#8 bits, no parity, one stop bit
+	movb $0x3, %al
+	movw $(0x3f8+3), %dx
+	out %al, %dx
+#enable FIFO, clear them, with 14-byte threshold
+	movb $0xc7, %al
+	movw $(0x3f8+2), %dx
+	out %al, %dx
+#IRQs enabled, RTS/DSR set
+	movb $0x0B, %al
+	movw $(0x3f8+4), %dx
+	out %al, %dx
 
 
 #######################################################

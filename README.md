@@ -10,7 +10,9 @@ upstream development the newest feature about HV.
 
 
 * Require Packages
-  * openSUSE TW
+  * openSUSE TW/openSUSE Leap15.0
+  * 32 bit libc dev package (zypper in glibc-devel-32bit)
+  * qemu-kvm (zypper in qemu-kvm)
 
 * Build
 
