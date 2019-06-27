@@ -157,28 +157,31 @@ void drawing_desktop()
 
 void drawing_mem_map()
 {
-    unsigned char *vram = VRAM_ADDR;
-    unsigned short xsize,ysize;
-    xsize=320;
-    ysize=200;
-    char buf[50];
-    //print memory map
-    struct MEMMAP *memmap = (struct MEMMAP *) (MEM_MAP_ADDR);
-    int pos=20;
-    for (; memmap->type !=0; ) {
-        sprintf(buf, "base:%X", memmap->base);
-        putfont8_string(vram,xsize, 8, pos, COL8_FFFFFF,font.Bitmap ,buf);
-        sprintf(buf, "len:%X", memmap->length);
-        putfont8_string(vram,xsize, 150, pos, COL8_FFFFFF,font.Bitmap ,buf);
-        if (memmap->type==1) {
-            sprintf(buf, "%s", "free");
-        } else {
-            sprintf(buf, "%s", "reserve");
-        }
-        putfont8_string(vram,xsize, 270, pos, COL8_FFFFFF,font.Bitmap ,buf);
-        memmap++;
-        pos = pos + 16;
-    }
+	unsigned char *vram = VRAM_ADDR;
+	unsigned short xsize, ysize;
+	xsize = 320;
+	ysize = 200;
+	char buf[50];
+	//print memory map
+	struct MEMMAP *memmap = (struct MEMMAP *)(MEM_MAP_ADDR);
+	int pos = 20;
+	for (; memmap->type != 0;) {
+		sprintf(buf, "base:%X", memmap->base);
+		putfont8_string(vram, xsize, 8, pos, COL8_FFFFFF, font.Bitmap,
+				buf);
+		sprintf(buf, "len:%X", memmap->length);
+		putfont8_string(vram, xsize, 150, pos, COL8_FFFFFF, font.Bitmap,
+				buf);
+		if (memmap->type == 1) {
+			sprintf(buf, "%s", "free");
+		} else {
+			sprintf(buf, "%s", "reserve");
+		}
+		putfont8_string(vram, xsize, 270, pos, COL8_FFFFFF, font.Bitmap,
+				buf);
+		memmap++;
+		pos = pos + 16;
+	}
 }
 
 void kernelstart(char *arg)
@@ -206,30 +209,30 @@ void kernelstart(char *arg)
 	write_string_serial("        Welcome to Hackweek18\r\n");
 	write_string_serial("####################################\r\n");
 
-    drawing_mem_map();
+	drawing_mem_map();
 
-
-    io_stihlt();
-    write_string_serial("Hackweek18\r\n");
-    while(1) {
-			io_cli();
-			if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0 && fifo_status(&serial_fifo) <= 0)	{
-				io_stihlt();
-			}else {
-					if (fifo_status(&key_fifo) > 0) {
-						unsigned char data = fifo_get(&key_fifo);
-						io_sti();
-						keyboard_handler(data);
-					}else if (fifo_status(&mouse_fifo) > 0) {
-						unsigned char data = fifo_get(&mouse_fifo);
-						io_sti();
-						mouse_handler(data);
-					}else if (fifo_status(&serial_fifo) > 0) {
-						io_sti();
-				        serial_handler(0);
-					}
+	io_stihlt();
+	write_string_serial("Hackweek18\r\n");
+	while (1) {
+		io_cli();
+		if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0
+		    && fifo_status(&serial_fifo) <= 0) {
+			io_stihlt();
+		} else {
+			if (fifo_status(&key_fifo) > 0) {
+				unsigned char data = fifo_get(&key_fifo);
+				io_sti();
+				keyboard_handler(data);
+			} else if (fifo_status(&mouse_fifo) > 0) {
+				unsigned char data = fifo_get(&mouse_fifo);
+				io_sti();
+				mouse_handler(data);
+			} else if (fifo_status(&serial_fifo) > 0) {
+				io_sti();
+				serial_handler(0);
 			}
 		}
+	}
 	return;
 }
 
@@ -597,9 +600,10 @@ void _inthandler24(int *esp)
 	fifo_put(&serial_fifo, data);
 	return;
 }
+
 void serial_handler(unsigned char data)
 {
-    serial_console ();
+	serial_console();
 }
 
 void _inthandler2c(int *esp)

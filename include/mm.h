@@ -13,14 +13,14 @@ struct MEMMAN {
 };
 
 struct MEMMAP {
-    int base; //int has 32bit
-    int res1;
-    int length;
-    int res2;
-    int type; // 1 can use
-    int res3;
-    int res4;
-    int res5;
+	int base;		//int has 32bit
+	int res1;
+	int length;
+	int res2;
+	int type;		// 1 can use
+	int res3;
+	int res4;
+	int res5;
 };
 
 void memman_init(struct MEMMAN *man);

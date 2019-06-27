@@ -46,22 +46,22 @@ int write_string_serial(char *string)
 
 int getchar()
 {
-    while(1) {
-        if (fifo_status(&serial_fifo) > 0) {
-            unsigned char data = fifo_get(&serial_fifo);
-            return data;
-        }else {
-            io_stihlt();
-        }
-    }
+	while (1) {
+		if (fifo_status(&serial_fifo) > 0) {
+			unsigned char data = fifo_get(&serial_fifo);
+			return data;
+		} else {
+			io_stihlt();
+		}
+	}
 }
 
 int get_serial_fifo()
 {
-    if (fifo_status(&serial_fifo) > 0) {
-        unsigned char data = fifo_get(&serial_fifo);
-        return data;
-    }else {
-        return '\0';
-    }
+	if (fifo_status(&serial_fifo) > 0) {
+		unsigned char data = fifo_get(&serial_fifo);
+		return data;
+	} else {
+		return '\0';
+	}
 }
