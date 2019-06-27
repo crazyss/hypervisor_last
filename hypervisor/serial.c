@@ -1,5 +1,6 @@
 #include "common.h"
-
+#include "fifo8.h"
+extern struct fifo serial_fifo;
 int serial_received()
 {
 	return io_in8(PORT + 5) & 1;
@@ -30,7 +31,6 @@ void write_serial(char a)
 	while (is_transmit_empty() == 0) {
 		return;
 	}
-
 	io_out8(PORT, a);
 }
 
@@ -42,4 +42,26 @@ int write_string_serial(char *string)
 		write_serial(string[i]);
 	}
 	return i;
+}
+
+int getchar()
+{
+    while(1) {
+        if (fifo_status(&serial_fifo) > 0) {
+            unsigned char data = fifo_get(&serial_fifo);
+            return data;
+        }else {
+            io_stihlt();
+        }
+    }
+}
+
+int get_serial_fifo()
+{
+    if (fifo_status(&serial_fifo) > 0) {
+        unsigned char data = fifo_get(&serial_fifo);
+        return data;
+    }else {
+        return '\0';
+    }
 }

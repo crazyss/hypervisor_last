@@ -177,12 +177,16 @@ void kernelstart(char *arg)
 	drawing_desktop();
 
 	io_stihlt();
-	write_string_serial("Hackweek18\r\n");
+	write_string_serial("####################################\r\n");
+	write_string_serial("        Welcome to Hackweek18\r\n");
+	write_string_serial("####################################\r\n");
+
+#if 1
 	while (1) {
 		io_cli();
 		if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0
 		    && fifo_status(&serial_fifo) <= 0) {
-			io_stihlt();
+            io_stihlt();
 		} else {
 			if (fifo_status(&key_fifo) > 0) {
 				unsigned char data = fifo_get(&key_fifo);
@@ -193,12 +197,13 @@ void kernelstart(char *arg)
 				io_sti();
 				mouse_handler(data);
 			} else if (fifo_status(&serial_fifo) > 0) {
-				unsigned char data = fifo_get(&serial_fifo);
+				//unsigned char data = fifo_get(&serial_fifo);
 				io_sti();
-				write_serial(data);
+				serial_handler(0);
 			}
 		}
 	}
+#endif
 	return;
 }
 
@@ -565,6 +570,10 @@ void _inthandler24(int *esp)
 	data = read_serial();
 	fifo_put(&serial_fifo, data);
 	return;
+}
+void serial_handler(unsigned char data)
+{
+    serial_console ();
 }
 
 void _inthandler2c(int *esp)
