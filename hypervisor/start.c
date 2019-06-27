@@ -152,7 +152,6 @@ void drawing_desktop()
 	//sprintf(buf,"MEMORY %d MB. %dMB Heap Free.", memtotal / (1024*1024), memman_total(memman) / (1024*1024));
 	putfont8_string(vram, xsize, 8, 8, COL8_FFFFFF, font.Bitmap,
 			"Hack Week 0x10!!!");
-	putfont8_string(vram, xsize, 8, 28, COL8_FFFFFF, font.Bitmap, buf);
 
 }
 
@@ -163,9 +162,6 @@ void drawing_mem_map()
     xsize=320;
     ysize=200;
     char buf[50];
-    unsigned int memtotal;
-    struct MEMMAN *memman = (struct MEMMAN *) (MEMMAN_ADDR);
-    memman_init(memman);
     //print memory map
     struct MEMMAP *memmap = (struct MEMMAP *) (MEM_MAP_ADDR);
     int pos=20;
@@ -206,13 +202,12 @@ void kernelstart(char *arg)
 
 	drawing_desktop();
 
-	io_stihlt();
 	write_string_serial("####################################\r\n");
 	write_string_serial("        Welcome to Hackweek18\r\n");
 	write_string_serial("####################################\r\n");
 
-    drawing_desktop();
     drawing_mem_map();
+
 
     io_stihlt();
     write_string_serial("Hackweek18\r\n");
@@ -235,8 +230,6 @@ void kernelstart(char *arg)
 					}
 			}
 		}
-	}
-#endif
 	return;
 }
 

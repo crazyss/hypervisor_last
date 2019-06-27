@@ -185,7 +185,7 @@ fin:
     hlt
     jmp fin
 
-INITSEG = 0x9000
+INITSEG = 0x7000
 
 idt_ptr:
     .word   0       /* limit */
