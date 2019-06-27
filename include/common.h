@@ -13,16 +13,13 @@ int io_in8(int port);
 int io_load_eflags(void); 
 void io_store_eflags(int eflags); 
 
-void init_palette(void); 
-void set_palette(int start, int end, unsigned char *rgb); 
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1); 
 
 void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *font);
 void putfont8_string(unsigned char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, unsigned char * string);
 
-void init_pic(void);
-
 extern struct bitmap_font font;
+unsigned int memtest(unsigned int start, unsigned int end);
 
 #define SYSSEG  0x1000
 #define MEMMAN_ADDR (char *)((0x003c0000) - (SYSSEG << 4))
@@ -58,9 +55,6 @@ struct GATE_DESCRIPTOR {
     short offset_high;
 };
 
-void init_gdtidt(void);
-void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
-void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 void load_gdtr(int limit, int addr);
 void load_idtr(int limit, int addr);
 
