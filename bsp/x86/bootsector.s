@@ -118,7 +118,7 @@ next2:
     mov %ax,%es
 #    
     add $1,%cl      #point to the next sector
-    cmp $30,%cl     #Check the total number of sectors !!!IMPORTANT
+    cmp $35,%cl     #Check the total number of sectors !!!IMPORTANT
     jbe readloop2        #reading 18 sectors
 #    
     movb $1,%cl

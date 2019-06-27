@@ -1,4 +1,7 @@
 #include "common.h"
+#include "mm.h"
+
+
 
 #define MAXSIZE_CMD 1024
 typedef struct command_line {
@@ -8,25 +11,67 @@ typedef struct command_line {
     //struct linknode list;
 }p_commandline;
 
+struct my_command {
+	char *name;
+	int (*cmd) (void);
+};
+
+int e820(void);
+int help(void);
+
+struct my_command cmd_set[] = {
+	{"help", help}, /* help display info about this shell*/
+	{"e820", e820}, /* help display info about this shell*/
+	{NULL, NULL}
+};
+
+int help()
+{
+    return 0;
+}
+
+
+int e820() {
+    struct MEMMAP *memmap = (struct MEMMAP *) (MEM_MAP_ADDR);
+    char buf[100];
+    int pos=20;
+    for (; memmap->type !=0; ) {
+        sprintf(buf, "base:%8X\t", memmap->base);
+        write_string_serial(buf);
+        sprintf(buf, "len:%8X\t", memmap->length);
+        write_string_serial(buf);
+        if (memmap->type==1) {
+            sprintf(buf, "%s\r\n", "free");
+        } else {
+            sprintf(buf, "%s\r\n", "reserve");
+        }
+        write_string_serial(buf);
+        memmap++;
+        pos = pos + 16;
+    }
+    return 0;
+}
+
+
+
 int read_cmdline(p_commandline *);
 void main_loop(p_commandline *);
 
 int findcmd(char *user_cmdline)
 {
-    //struct my_command *p = cmd_set;
+    struct my_command *p = cmd_set;
     int ret=127;
 
-#if 0
     while(p->name) {
-        if (!strncmp(p->name, pp.we_wordv[0], strlen(pp.we_wordv[0]))){
-               ret=p->cmd(pp.we_wordc, pp.we_wordv);
+        if (!strncmp(p->name, user_cmdline, strnlen(p->name, 64))){
+               ret=p->cmd();
                return ret;
         }
         p++;
     }
-#endif
     return ret;
 }
+
 
 void main_loop(p_commandline *cmd) {
     int ret;
@@ -45,11 +90,13 @@ void main_loop(p_commandline *cmd) {
 	}
     if (ret == 0) {
         if (cmd->pos > 0) {
-            write_string_serial("Command not found !\n\r");
+            ret=findcmd(cmd->cmd);//find command as built-in
+            if (ret==127) {
+                write_string_serial("Command not found !\n\r");
+            }
         }
         write_string_serial("Hypervisor$ ");
     }
-//    ret=findcmd(cmd->cmd);//find command as built-in
 
     cmd->count = 0;
     cmd->pos = 0;
@@ -81,6 +128,7 @@ int read_cmdline(p_commandline *cmd)
         write_serial(c);
         return 127;
     }
+    cmd->cmd[cmd->pos] = '\0';
     write_string_serial("\r\n");
     return 0;
 
