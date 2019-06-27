@@ -1,4 +1,4 @@
-void    asm_inthandler21(void)
+void asm_inthandler21(void)
 {
-    
+
 }
