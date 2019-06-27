@@ -151,7 +151,7 @@ void drawing_desktop()
 	//}
 	//sprintf(buf,"MEMORY %d MB. %dMB Heap Free.", memtotal / (1024*1024), memman_total(memman) / (1024*1024));
 	putfont8_string(vram, xsize, 8, 8, COL8_FFFFFF, font.Bitmap,
-			"Hack Week 0x10!!!");
+			"Hack Week 18!!!");
 
 }
 
