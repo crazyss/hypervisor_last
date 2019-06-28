@@ -15,8 +15,8 @@
 extern char mcursor[256];
 
 struct wjn {
-    int t;
-    int w;
+	int t;
+	int w;
 };
 
 struct fifo key_fifo;
@@ -31,7 +31,7 @@ struct screen_postion {
     .y = 20,
 };
 
-struct mouse_info mouse_status = {0};
+struct mouse_info mouse_status = { 0 };
 
 static void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar)
 {
@@ -60,35 +60,37 @@ static void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, i
 
 static void init_gdtidt(void)
 {
-    struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) (ADR_GDT - (SYSSEG << 4));
-    struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) (ADR_IDT - (SYSSEG << 4));
-    //struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT;
-    int i;
-    /* GDT<82>Ì<8f><89><8a>ú<89>» */
-    for (i = 0; i <= LIMIT_GDT / 8; i++) {
-        set_segmdesc(gdt + i, 0, 0, 0);
-    }
+	struct SEGMENT_DESCRIPTOR *gdt =
+	    (struct SEGMENT_DESCRIPTOR *)(ADR_GDT - (SYSSEG << 4));
+	struct GATE_DESCRIPTOR *idt =
+	    (struct GATE_DESCRIPTOR *)(ADR_IDT - (SYSSEG << 4));
+	//struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT;
+	int i;
+	/* GDT<82>Ì<8f><89><8a>ú<89>» */
+	for (i = 0; i <= LIMIT_GDT / 8; i++) {
+		set_segmdesc(gdt + i, 0, 0, 0);
+	}
 #if 0
-    set_segmdesc(gdt + 2, 0xffffffff,   0x00010000, AR_CODE32_ER);
-    set_segmdesc(gdt + 3, LIMIT_BOTPAK, ADR_BOTPAK, AR_DATA32_RW);
-    load_gdtr(LIMIT_GDT, ADR_GDT);
+	set_segmdesc(gdt + 2, 0xffffffff, 0x00010000, AR_CODE32_ER);
+	set_segmdesc(gdt + 3, LIMIT_BOTPAK, ADR_BOTPAK, AR_DATA32_RW);
+	load_gdtr(LIMIT_GDT, ADR_GDT);
 #endif
-    /* IDT<82>Ì<8f><89><8a>ú<89>» */
-    for (i = 0; i <= LIMIT_IDT / 8; i++) {
-        set_gatedesc(idt + i, 0xfff, 0, 0);
-    }
-    load_idtr(LIMIT_IDT, ADR_IDT);
+	/* IDT<82>Ì<8f><89><8a>ú<89>» */
+	for (i = 0; i <= LIMIT_IDT / 8; i++) {
+		set_gatedesc(idt + i, 0xfff, 0, 0);
+	}
+	load_idtr(LIMIT_IDT, ADR_IDT);
 
-    set_gatedesc(idt + 0x24, (int) inthandler24, 2 * 8, AR_INTGATE32);
+	set_gatedesc(idt + 0x24, (int)inthandler24, 2 * 8, AR_INTGATE32);
 
-    set_gatedesc(idt + 0x21, (int) inthandler21, 2 * 8, AR_INTGATE32);
+	set_gatedesc(idt + 0x21, (int)inthandler21, 2 * 8, AR_INTGATE32);
 #if 1
-    /* IDT<82>Ì<90>Ý<92>è */
-    set_gatedesc(idt + 0x27, (int) inthandler27, 2 * 8, AR_INTGATE32);
+	/* IDT<82>Ì<90>Ý<92>è */
+	set_gatedesc(idt + 0x27, (int)inthandler27, 2 * 8, AR_INTGATE32);
 #endif
 
-    set_gatedesc(idt + 0x2c, (int) inthandler2c, 2 * 8, AR_INTGATE32);
-    return;
+	set_gatedesc(idt + 0x2c, (int)inthandler2c, 2 * 8, AR_INTGATE32);
+	return;
 }
 
 static void drawing_desktop()
@@ -129,7 +131,7 @@ static void drawing_desktop()
     boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
 
     memtotal=memtest(0x400000, 0xbfffffff);
-    ret = memman_free(MEMMAN_ADDR, 0x00100000, 0x00100000);
+    ret = memman_free((struct MEMMAN*)(MEMMAN_ADDR), 0x00100000, 0x00100000);
     if (ret != -1) {
         putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 1 Failed");
     }
@@ -139,40 +141,37 @@ static void drawing_desktop()
     //}
     //sprintf(buf,"MEMORY %d MB. %dMB Heap Free.", memtotal / (1024*1024), memman_total(memman) / (1024*1024));
     putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 0x13!!!");
-    putfont8_string(vram,xsize, 8, 28, COL8_FFFFFF,font.Bitmap , buf);
 
 }
 
 void drawing_mem_map()
 {
-    unsigned char *vram = VRAM_ADDR;
-    unsigned short xsize,ysize;
-    xsize=320;
-    ysize=200;
-    char buf[50];
-    unsigned int memtotal;
-    struct MEMMAN *memman = (struct MEMMAN *) (MEMMAN_ADDR);
-    memman_init(memman);
-    //print memory map
-    struct MEMMAP *memmap = (struct MEMMAP *) (MEM_MAP_ADDR);
-    int pos=20;
-    for (; memmap->type !=0; ) {
-        sprintf(buf, "base:%X", memmap->base);
-        putfont8_string(vram,xsize, 8, pos, COL8_FFFFFF,font.Bitmap ,buf);
-        sprintf(buf, "len:%X", memmap->length);
-        putfont8_string(vram,xsize, 150, pos, COL8_FFFFFF,font.Bitmap ,buf);
-        if (memmap->type==1) {
-            sprintf(buf, "%s", "free");
-        } else {
-            sprintf(buf, "%s", "reserve");
-        }
-        putfont8_string(vram,xsize, 270, pos, COL8_FFFFFF,font.Bitmap ,buf);
-        memmap++;
-        pos = pos + 16;
-    }
+	unsigned char *vram = VRAM_ADDR;
+	unsigned short xsize, ysize;
+	xsize = 320;
+	ysize = 200;
+	char buf[50];
+	//print memory map
+	struct MEMMAP *memmap = (struct MEMMAP *)(MEM_MAP_ADDR);
+	int pos = 20;
+	for (; memmap->type != 0;) {
+		sprintf(buf, "base:%X", memmap->base);
+		putfont8_string(vram, xsize, 8, pos, COL8_FFFFFF, font.Bitmap,
+				buf);
+		sprintf(buf, "len:%X", memmap->length);
+		putfont8_string(vram, xsize, 150, pos, COL8_FFFFFF, font.Bitmap,
+				buf);
+		if (memmap->type == 1) {
+			sprintf(buf, "%s", "free");
+		} else {
+			sprintf(buf, "%s", "reserve");
+		}
+		putfont8_string(vram, xsize, 270, pos, COL8_FFFFFF, font.Bitmap,
+				buf);
+		memmap++;
+		pos = pos + 16;
+	}
 }
-
-
 
 static void wait_KBC_sendready(void)
 {
@@ -214,41 +213,41 @@ static void enable_mouse(void)
 
 static void set_palette(int start, int end, unsigned char *rgb)
 {
-    int i, eflags;
-    io_out8(0x03c8, start);
-    for (i = start; i <= end; i++) {
-        io_out8(0x03c9, rgb[0] / 4);
-        io_out8(0x03c9, rgb[1] / 4);
-        io_out8(0x03c9, rgb[2] / 4);
-        rgb += 3;
-    }
-    return;
+	int i, eflags;
+	io_out8(0x03c8, start);
+	for (i = start; i <= end; i++) {
+		io_out8(0x03c9, rgb[0] / 4);
+		io_out8(0x03c9, rgb[1] / 4);
+		io_out8(0x03c9, rgb[2] / 4);
+		rgb += 3;
+	}
+	return;
 }
 
 static void init_palette(void)
 {
-    static unsigned char table_rgb[16 * 3] = {
-        0x00, 0x00, 0x00,   /*  0:*/
-        0xff, 0x00, 0x00,   /*  1:*/
-        0x00, 0xff, 0x00,   /*  2:*/
-        0xff, 0xff, 0x00,   /*  3:*/
-        0x00, 0x00, 0xff,   /*  4:*/
-        0xff, 0x00, 0xff,   /*  5:*/
-        0x00, 0xff, 0xff,   /*  6:*/
-        0xff, 0xff, 0xff,   /*  7:*/
-        0xc6, 0xc6, 0xc6,   /*  8:*/
-        0x84, 0x00, 0x00,   /*  9:*/
-        0x00, 0x84, 0x00,   /* 10:*/
-        0x84, 0x84, 0x00,   /* 11:*/
-        0x00, 0x00, 0x84,   /* 12:*/
-        0x84, 0x00, 0x84,   /* 13:*/
-        0x00, 0x84, 0x84,   /* 14:*/
-        0x84, 0x84, 0x84    /* 15:*/
-    };
-    set_palette(0, 15, table_rgb);
-    return;
+	static unsigned char table_rgb[16 * 3] = {
+		0x00, 0x00, 0x00,	/*  0: */
+		0xff, 0x00, 0x00,	/*  1: */
+		0x00, 0xff, 0x00,	/*  2: */
+		0xff, 0xff, 0x00,	/*  3: */
+		0x00, 0x00, 0xff,	/*  4: */
+		0xff, 0x00, 0xff,	/*  5: */
+		0x00, 0xff, 0xff,	/*  6: */
+		0xff, 0xff, 0xff,	/*  7: */
+		0xc6, 0xc6, 0xc6,	/*  8: */
+		0x84, 0x00, 0x00,	/*  9: */
+		0x00, 0x84, 0x00,	/* 10: */
+		0x84, 0x84, 0x00,	/* 11: */
+		0x00, 0x00, 0x84,	/* 12: */
+		0x84, 0x00, 0x84,	/* 13: */
+		0x00, 0x84, 0x84,	/* 14: */
+		0x84, 0x84, 0x84	/* 15: */
+	};
+	set_palette(0, 15, table_rgb);
+	return;
 
-    /* static char <96>$<97>ß<82>Í<81>A<83>f<81>[<83>^<82>É<82>µ<82>©<8e>g<82>¦<82>È<82>¢<82>¯<82>ÇDB<96>$<97>ß<91><8a><93><96> */
+	/* static char <96>$<97>ß<82>Í<81>A<83>f<81>[<83>^<82>É<82>µ<82>©<8e>g<82>¦<82>È<82>¢<82>¯<82>ÇDB<96>$<97>ß<91><8a><93><96> */
 }
 
 static void init_pic(void)
@@ -256,38 +255,42 @@ static void init_pic(void)
     io_out8(PIC1_OCW1,  0xFF); 
     io_out8(PIC0_OCW1,  0xFF); 
 
-    io_out8(PIC0_COMMAND,   0x11);
-    io_out8(PIC1_COMMAND,   0x11);
+	io_out8(PIC0_COMMAND, 0x11);
+	io_out8(PIC1_COMMAND, 0x11);
 
-    io_out8(PIC1_DATA, 0x28  );
-    io_out8(PIC0_DATA, 0x20  );
+	io_out8(PIC1_DATA, 0x28);
+	io_out8(PIC0_DATA, 0x20);
 
-    io_out8(PIC0_DATA, 1 << 2);
-    io_out8(PIC1_DATA, 2);
+	io_out8(PIC0_DATA, 1 << 2);
+	io_out8(PIC1_DATA, 2);
 
-    io_out8(PIC0_DATA, 0x01); /*8086 mode for both*/
-    io_out8(PIC1_DATA, 0x01);
+	io_out8(PIC0_DATA, 0x01);	/*8086 mode for both */
+	io_out8(PIC1_DATA, 0x01);
 
-    io_out8(PIC0_DATA,  0xfb); 
-    io_out8(PIC1_DATA,  0xff); 
+	io_out8(PIC0_DATA, 0xfb);
+	io_out8(PIC1_DATA, 0xff);
 
-    return;
+	return;
+}
+
+static void serial_handler(unsigned char data)
+{
+	serial_console();
 }
 
 #define PORT_KEYDAT 0x0060
 static void keyboard_handler(unsigned char data)
 {
-    unsigned char *vram = VRAM_ADDR;
-    unsigned short xsize,ysize;
-    unsigned char out_buffer[3];
-    unsigned char t;
-    xsize=320;
-    ysize=200;
-    if (data >= 0x81 || data == -1)
-        return ;
-    out_buffer[0] = scancode[data];
-    if (out_buffer[0] == 0) {
-#if 1
+	unsigned char *vram = VRAM_ADDR;
+	unsigned short xsize, ysize;
+	unsigned char out_buffer[3];
+	unsigned char t;
+	xsize = 320;
+	ysize = 200;
+	if (data >= 0x81 || data == -1)
+		return;
+	out_buffer[0] = scancode[data];
+	if (out_buffer[0] == 0) {
         t=(data & 0xf0)>>4;
         if (t >= 0xa && t <= 0xf) {
             out_buffer[0] = 'A' + t - 10; 
@@ -319,16 +322,16 @@ static void keyboard_handler(unsigned char data)
         boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
 
         putfont8_string(vram,xsize, 283, 180, COL8_00FF00,font.Bitmap , out_buffer);
-#endif
-        return;
-    }
-    out_buffer[1] = 0;
+		return;
+	}
+	out_buffer[1] = 0;
 
     putfont8_string(vram,xsize, 0, 0, COL8_FFFFFF,font.Bitmap , out_buffer);
 
-    if (data == 0x30 || data == 0xB0) {
-        putfont8_string(vram,xsize, 8, 100, COL8_FFFFFF,font.Bitmap , (unsigned char *)"May the source be with you!");
-    }
+	if (data == 0x30 || data == 0xB0) {
+		putfont8_string(vram, xsize, 8, 100, COL8_FFFFFF, font.Bitmap,
+				(unsigned char *)"May the source be with you!");
+	}
 }
 
 static void mouse_handler(unsigned char data)
@@ -430,9 +433,8 @@ void kernelstart(char *arg)
                 io_sti();
                 mouse_handler(data);
             } else if (fifo_status(&serial_fifo) > 0) {
-                unsigned char data = fifo_get(&serial_fifo);
                 io_sti();
-                write_serial(data);
+				serial_handler(0);
             }
         }
     }
@@ -520,21 +522,23 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
 
 void _inthandler21(int *esp)
 {
-    unsigned char data;
-    io_out8(PIC0_COMMAND, PIC_EOI);
-    data = io_in8(PORT_KEYDAT);
-    fifo_put(&key_fifo, data);
-    return;
+	unsigned char data;
+	io_out8(PIC0_COMMAND, PIC_EOI);
+	data = io_in8(PORT_KEYDAT);
+	fifo_put(&key_fifo, data);
+	return;
 }
 
 void _inthandler24(int *esp)
-{   
-    unsigned char data;
-    io_out8(PIC0_COMMAND, 0x20);
-    data = read_serial();
-    fifo_put(&serial_fifo, data);
-    return;
+{
+	unsigned char data;
+	io_out8(PIC0_COMMAND, 0x20);
+	data = read_serial();
+	fifo_put(&serial_fifo, data);
+	return;
 }
+
+
 void _inthandler2c(int *esp)
 {   
     unsigned char data;
@@ -547,7 +551,6 @@ void _inthandler2c(int *esp)
 
 void _inthandler27(int *esp)
 {
-    io_out8(PIC0_COMMAND, 0x67); /* IRQ-07<8e>ó<95>t<8a>®<97>¹<82>ðPIC<82>É<92>Ê<92>m(7-1<8e>Q<8f>Æ) */
-    return;
+	io_out8(PIC0_COMMAND, 0x67);	/* IRQ-07<8e>ó<95>t<8a>®<97>¹<82>ðPIC<82>É<92>Ê<92>m(7-1<8e>Q<8f>Æ) */
+	return;
 }
-

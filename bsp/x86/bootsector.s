@@ -3,7 +3,7 @@
 
 CYLS = 10
 BOOTSEG =   0x07C0
-INITSEG =   0x9000
+INITSEG =   0x7000
 SYSSEG  =   0x1000
 .code16
 .section ".bstext", "ax"
@@ -118,7 +118,7 @@ next2:
     mov %ax,%es
 #    
     add $1,%cl      #point to the next sector
-    cmp $28,%cl     #If the currect is 18th sector.
+    cmp $35,%cl     #Check the total number of sectors !!!IMPORTANT
     jbe readloop2        #reading 18 sectors
 #    
     movb $1,%cl

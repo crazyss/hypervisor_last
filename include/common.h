@@ -12,6 +12,9 @@ void io_out8(int port, int data);
 int io_in8(int port); 
 int io_load_eflags(void); 
 void io_store_eflags(int eflags); 
+int load_cr0(void);
+int store_cr0(int cr0);
+
 
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1); 
 
@@ -40,21 +43,18 @@ unsigned int memtest(unsigned int start, unsigned int end);
 #define COL8_840084     13
 #define COL8_008484     14
 #define COL8_848484     15
-#define MEM_MAP_ADDR (char *)((0x00098004)-(SYSSEG << 4))
-
-
-
+#define MEM_MAP_ADDR (char *)((0x00078004)-(SYSSEG << 4))
 
 struct SEGMENT_DESCRIPTOR {
-    short limit_low, base_low;
-    char base_mid, access_right;
-    char limit_high, base_high;
+	short limit_low, base_low;
+	char base_mid, access_right;
+	char limit_high, base_high;
 };
 
 struct GATE_DESCRIPTOR {
-    short offset_low, selector;
-    char dw_count, access_right;
-    short offset_high;
+	short offset_low, selector;
+	char dw_count, access_right;
+	short offset_high;
 };
 
 void load_gdtr(int limit, int addr);
@@ -69,7 +69,7 @@ void load_idtr(int limit, int addr);
 #define PIC1_OCW1    		PIC1+1
 #define PIC1_OCW2    		PIC1
 #define PIC0_IMR				PIC0_OCW1
-#define PIC1_IMR				PIC1_OCW1    		
+#define PIC1_IMR				PIC1_OCW1
 #define PIC0_ICW1				PIC0
 #define PIC1_ICW1				PIC1
 #define PIC0_ICW2				PIC0+1
@@ -82,10 +82,7 @@ void load_idtr(int limit, int addr);
 #define PIC0_DATA       (PIC0+1)
 #define PIC1_COMMAND    PIC1
 #define PIC1_DATA       (PIC1+1)
-#define PIC_EOI		0x20		/* End-of-interrupt command code */
-
-
-
+#define PIC_EOI		0x20	/* End-of-interrupt command code */
 
 /*GDT / IDT data*/
 
@@ -98,7 +95,6 @@ void load_idtr(int limit, int addr);
 #define AR_DATA32_RW    0x4092
 #define AR_CODE32_ER    0x409a
 #define AR_INTGATE32    0x008e
-
 
 /*Serial PORT*/
 #define PORT 0x3F8
@@ -114,7 +110,7 @@ struct mouse_info {
 	int x, y, btn;
 	int mx, my;
 };
-void draw_mouse_on_screen(struct mouse_info*);
+void draw_mouse_on_screen(struct mouse_info *);
 void init_mouse_cursor8(char *, char);
-extern char scancode [];
+extern char scancode[];
 #endif

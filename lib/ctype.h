@@ -1,22 +1,23 @@
 #ifndef BOOT_CTYPE_H
 #define BOOT_CTYPE_H
 enum {
-    false   = 0,
-    true    = 1
+	false = 0,
+	true = 1
 };
 static inline int isdigit(int ch)
 {
-    return (ch >= '0') && (ch <= '9');
+	return (ch >= '0') && (ch <= '9');
 }
+
 static inline int isxdigit(int ch)
 {
-    if (isdigit(ch))
-        return true;
+	if (isdigit(ch))
+		return true;
 
-    if ((ch >= 'a') && (ch <= 'f'))
-        return true;
+	if ((ch >= 'a') && (ch <= 'f'))
+		return true;
 
-    return (ch >= 'A') && (ch <= 'F');
+	return (ch >= 'A') && (ch <= 'F');
 }
 
 typedef unsigned int __size_t_32;
