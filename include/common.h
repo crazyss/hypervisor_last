@@ -4,28 +4,22 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-void io_hlt(void);
-void io_cli(void);
-void io_sti(void);
-void io_stihlt(void);
-void io_out8(int port, int data);
-int io_in8(int port);
-int io_load_eflags(void);
-void io_store_eflags(int eflags);
+void io_hlt(void); 
+void io_cli(void); 
+void io_sti(void); 
+void io_stihlt(void); 
+void io_out8(int port, int data); 
+int io_in8(int port); 
+int io_load_eflags(void); 
+void io_store_eflags(int eflags); 
 
-void init_palette(void);
-void set_palette(int start, int end, unsigned char *rgb);
-void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0,
-	      int x1, int y1);
+void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1); 
 
-void putfont8(char *vram, int xsize, int x, int y, char c,
-	      const unsigned char *font);
-void putfont8_string(unsigned char *vram, int xsize, int x, int y, char color,
-		     const unsigned char *font_bitmap, unsigned char *string);
-
-void init_pic(void);
+void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *font);
+void putfont8_string(unsigned char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, unsigned char * string);
 
 extern struct bitmap_font font;
+unsigned int memtest(unsigned int start, unsigned int end);
 
 #define SYSSEG  0x1000
 #define MEMMAN_ADDR (char *)((0x003c0000) - (SYSSEG << 4))
@@ -60,10 +54,6 @@ struct GATE_DESCRIPTOR {
 	short offset_high;
 };
 
-void init_gdtidt(void);
-void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base,
-		  int ar);
-void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 void load_gdtr(int limit, int addr);
 void load_idtr(int limit, int addr);
 
