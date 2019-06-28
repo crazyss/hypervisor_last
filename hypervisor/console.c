@@ -1,5 +1,7 @@
 #include "common.h"
 #include "mm.h"
+#include "serial.h"
+#include "string.h"
 
 #define MAXSIZE_CMD 1024
 typedef struct command_line {
@@ -82,7 +84,7 @@ void main_loop(p_commandline * cmd)
 		cmd->count = 0;
 		cmd->pos = 0;
 		cmd->cmd[0] = 0;
-		return -1;
+		return;
 	}
 	if (ret == 0) {
 		if (cmd->pos > 0) {
@@ -97,10 +99,6 @@ void main_loop(p_commandline * cmd)
 	cmd->count = 0;
 	cmd->pos = 0;
 	cmd->cmd[0] = 0;
-#if 0
-	if (ret == 127) {	//this is a external command
-	}
-#endif
 }
 
 int read_cmdline(p_commandline * cmd)
@@ -206,7 +204,7 @@ int read_cmdline(p_commandline * cmd)
 		write_string_serial("\n\r");
 	}
 	cmd->cmd[cmd->count] = '\0';
-	return;
+	return 0;
 }
 
 p_commandline cmd = {

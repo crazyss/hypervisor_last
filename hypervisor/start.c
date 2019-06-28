@@ -131,7 +131,7 @@ static void drawing_desktop()
     boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
 
     memtotal=memtest(0x400000, 0xbfffffff);
-    ret = memman_free(MEMMAN_ADDR, 0x00100000, 0x00100000);
+    ret = memman_free((struct MEMMAN*)(MEMMAN_ADDR), 0x00100000, 0x00100000);
     if (ret != -1) {
         putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 1 Failed");
     }
@@ -271,6 +271,11 @@ static void init_pic(void)
 	io_out8(PIC1_DATA, 0xff);
 
 	return;
+}
+
+static void serial_handler(unsigned char data)
+{
+	serial_console();
 }
 
 #define PORT_KEYDAT 0x0060
@@ -533,10 +538,6 @@ void _inthandler24(int *esp)
 	return;
 }
 
-void serial_handler(unsigned char data)
-{
-	serial_console();
-}
 
 void _inthandler2c(int *esp)
 {   

@@ -4,7 +4,9 @@
 typedef char *va_list;
 #endif
 
-#define NULL 0
+#include "ctype.h"
+#include "string.h"
+
 typedef int s32;
 typedef s32 acpi_native_int;
 
@@ -22,14 +24,6 @@ typedef s32 acpi_native_int;
 
 #endif
 
-static int skip_atoi(const char **s)
-{
-	int i = 0;
-
-	while (isdigit(**s))
-		i = i * 10 + *((*s)++) - '0';
-	return i;
-}
 
 #define ZEROPAD 1		/* pad with zero */
 #define SIGN    2		/* unsigned/signed long */
@@ -46,14 +40,12 @@ static int skip_atoi(const char **s)
         __res;\
     })
 
-int sprintf(char *buf, const char *fmt, ...)
+static int skip_atoi(const char **s)
 {
-	va_list args;
-	int i;
+	int i = 0;
 
-	va_start(args, fmt);
-	i = vsprintf(buf, fmt, args);
-	va_end(args);
+	while (isdigit(**s))
+		i = i * 10 + *((*s)++) - '0';
 	return i;
 }
 
@@ -287,3 +279,16 @@ repeat:
 	*str = '\0';
 	return str - buf;
 }
+
+int sprintf(char *buf, const char *fmt, ...)
+{
+	va_list args;
+	int i;
+
+	va_start(args, fmt);
+	i = vsprintf(buf, fmt, args);
+	va_end(args);
+	return i;
+}
+
+
