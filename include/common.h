@@ -40,6 +40,8 @@ unsigned int memtest(unsigned int start, unsigned int end);
 #define COL8_840084     13
 #define COL8_008484     14
 #define COL8_848484     15
+#define MEM_MAP_ADDR (char *)((0x00098004)-(SYSSEG << 4))
+
 
 
 

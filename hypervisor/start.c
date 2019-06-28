@@ -143,6 +143,37 @@ static void drawing_desktop()
 
 }
 
+void drawing_mem_map()
+{
+    unsigned char *vram = VRAM_ADDR;
+    unsigned short xsize,ysize;
+    xsize=320;
+    ysize=200;
+    char buf[50];
+    unsigned int memtotal;
+    struct MEMMAN *memman = (struct MEMMAN *) (MEMMAN_ADDR);
+    memman_init(memman);
+    //print memory map
+    struct MEMMAP *memmap = (struct MEMMAP *) (MEM_MAP_ADDR);
+    int pos=20;
+    for (; memmap->type !=0; ) {
+        sprintf(buf, "base:%X", memmap->base);
+        putfont8_string(vram,xsize, 8, pos, COL8_FFFFFF,font.Bitmap ,buf);
+        sprintf(buf, "len:%X", memmap->length);
+        putfont8_string(vram,xsize, 150, pos, COL8_FFFFFF,font.Bitmap ,buf);
+        if (memmap->type==1) {
+            sprintf(buf, "%s", "free");
+        } else {
+            sprintf(buf, "%s", "reserve");
+        }
+        putfont8_string(vram,xsize, 270, pos, COL8_FFFFFF,font.Bitmap ,buf);
+        memmap++;
+        pos = pos + 16;
+    }
+}
+
+
+
 static void wait_KBC_sendready(void)
 {
     /* 等待键盘控制电路准备完毕 */
@@ -381,6 +412,7 @@ void kernelstart(char *arg)
     enable_mouse();
 
     drawing_desktop();
+    drawing_mem_map();
 
     io_stihlt();
     write_string_serial("Hackweek18\r\n");
