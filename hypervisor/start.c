@@ -82,9 +82,12 @@ static void init_gdtidt(void)
 	}
 	load_idtr(LIMIT_IDT, ADR_IDT);
 
-	set_gatedesc(idt + 0x24, (int)inthandler24, 2 * 8, AR_INTGATE32);
+	set_gatedesc(idt + 0x20, (int)inthandler20, 2 * 8, AR_INTGATE32);
 
 	set_gatedesc(idt + 0x21, (int)inthandler21, 2 * 8, AR_INTGATE32);
+
+	set_gatedesc(idt + 0x24, (int)inthandler24, 2 * 8, AR_INTGATE32);
+
 #if 1
 	/* IDT<82>Ì<90>Ý<92>è */
 	set_gatedesc(idt + 0x27, (int)inthandler27, 2 * 8, AR_INTGATE32);
@@ -251,6 +254,14 @@ static void init_palette(void)
 	/* static char <96>$<97>ß<82>Í<81>A<83>f<81>[<83>^<82>É<82>µ<82>©<8e>g<82>¦<82>È<82>¢<82>¯<82>ÇDB<96>$<97>ß<91><8a><93><96> */
 }
 
+static void init_pit(void)
+{
+    io_out8(PIT_CMD, 0x34);
+	io_out8(PIT_CH0, 0x9c);
+	io_out8(PIT_CH0, 0x2e);
+	return;
+}
+
 static void init_pic(void)
 {
     io_out8(PIC1_OCW1,  0xFF); 
@@ -404,12 +415,14 @@ void kernelstart(char *arg)
 
     init_gdtidt();
     init_pic();
+    init_pit();
     fifo_init(&key_fifo, 32, keybuffer);
     fifo_init(&mouse_fifo, 128, mousebuffer);
     fifo_init(&serial_fifo, 32, serialbuffer);
     io_sti();
 
-    io_out8(PIC0_DATA, 0xe9); /* PIC0<82>Æ<83>L<81>[<83>{<81>[<83>h<82>ð<8b><96><89>Â(11101001) */
+    io_out8(PIC0_DATA, 0xe8); /* PIC0<82>Æ<83>L<81>[<83>{<81>[<83>h<82>ð<8b><96><89>Â(11101001) */
+    //io_out8(PIC0_DATA, 0xe9); /* PIC0<82>Æ<83>L<81>[<83>{<81>[<83>h<82>ð<8b><96><89>Â(11101001) */
     io_out8(PIC1_DATA, 0xef); /* <83>}<83>E<83>X<82>ð<8b><96><89>Â(11101111) */
 
     init_keyboard();
@@ -525,6 +538,13 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
     return;
 }
 
+void _inthandler20(int *esp)
+{
+	unsigned char data;
+	io_out8(PIC0_COMMAND, PIC_EOI);
+    write_string_serial(".");
+	return;
+}
 void _inthandler21(int *esp)
 {
 	unsigned char data;
