@@ -254,13 +254,6 @@ static void init_palette(void)
 	/* static char <96>$<97>ß<82>Í<81>A<83>f<81>[<83>^<82>É<82>µ<82>©<8e>g<82>¦<82>È<82>¢<82>¯<82>ÇDB<96>$<97>ß<91><8a><93><96> */
 }
 
-static void init_pit(void)
-{
-    io_out8(PIT_CMD, 0x34);
-	io_out8(PIT_CH0, 0x9c);
-	io_out8(PIT_CH0, 0x2e);
-	return;
-}
 
 static void init_pic(void)
 {
@@ -538,13 +531,6 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
     return;
 }
 
-void _inthandler20(int *esp)
-{
-	unsigned char data;
-	io_out8(PIC0_COMMAND, PIC_EOI);
-    write_string_serial(".");
-	return;
-}
 void _inthandler21(int *esp)
 {
 	unsigned char data;

@@ -1,6 +1,5 @@
 #ifndef _SERIAL_H
 #define _SERIAL_H
-#include "common.h"
 
 int serial_received();
 char read_serial();
