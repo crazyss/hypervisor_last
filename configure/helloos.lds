@@ -21,12 +21,12 @@ SECTIONS
             memtest.o(.text*)
             libmemtest.o(.text*)
         }
-        .bss : {
-            *(.bss*)
-        }
         .rodata : {
             *(.rodata*)
             font.o(.rodata*)
+        }
+        .bss : {
+            *(.bss*)
         }
 }
 

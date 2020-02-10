@@ -398,6 +398,8 @@ void kernelstart(char *arg)
     unsigned char serialbuffer[32];
     unsigned char james_global;
 
+    init_page_directory();
+
     init_palette();
 
     init_gdtidt();
