@@ -9,8 +9,8 @@ void init_pit(void)
 {
     int i;
     io_out8(PIT_CMD, 0x34);
-	io_out8(PIT_CH0, 0x9c);
-	io_out8(PIT_CH0, 0x2e);
+    io_out8(PIT_CH0, 0x9c);
+    io_out8(PIT_CH0, 0x2e);
 
     timers.count = 0;
     for (i=0;i<MAX_TIMER;i++) {
@@ -23,12 +23,12 @@ void init_pit(void)
     timers.current = t;
     timers.next = -1;
 
-	return;
+    return;
 }
 void timer_free(struct TIMER *timer)
 {
-	timer->flags = UNUSE; /* set to unused*/
-	return;
+    timer->flags = UNUSE; /* set to unused*/
+    return;
 }
 
 
@@ -47,7 +47,7 @@ timer* timer_alloc(void)
 void _inthandler20(int *esp)
 {
     timer *t;
-	io_out8(PIC0_COMMAND, PIC_EOI);
+    io_out8(PIC0_COMMAND, PIC_EOI);
     timers.count++;
     if (timers.next > timers.count) {
         return;
@@ -63,5 +63,5 @@ void _inthandler20(int *esp)
     }
     timers.current = t;
     timers.next = t->timeout;
-	return;
+    return;
 }
