@@ -8,7 +8,9 @@ SYSSEG  =   0x1000
 .code16
 .section ".bstext", "ax"
 start:
-#.byte 0xeb,0x4e,0x90
+#machine code ea 05 00 c0 07
+#ljmp   $0x7c0,$0x5 (Through objdump -D -Mi8086)
+#cs will be set to 0x7c0
 ljmp $BOOTSEG, $main_start
 
 main_start:
