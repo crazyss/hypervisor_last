@@ -185,7 +185,7 @@ fin:
     hlt
     jmp fin
 
-INITSEG = 0x7000
+SYSSEG = 0x1000
 
 idt_ptr:
     .word   0       /* limit */
@@ -193,7 +193,7 @@ idt_ptr:
 
 gdt_ptr:
     .word   0x20        /* limit (32 bytes = 5 GDT entries) */
-    .long   gdt + (INITSEG * 16) /* base  [INITSEG:gdt]*/
+    .long   gdt + (SYSSEG * 16) /* base  [INITSEG:gdt]*/
 
 gdt:
     /*

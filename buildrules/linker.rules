@@ -25,3 +25,6 @@ run.x86.debug.gdb: $(OBJDIR)/boot.img
 	qemu-system-x86_64 -cpu 486 -fda $< -net none -no-kvm -S -s -monitor stdio
 run.x86.libvirt: $(OBJDIR)/boot.img
 	virt-install --name kos --ram 64 --disk $<,device=floppy,format=raw --boot hd --arch i386
+# this will open vnc port 5909 for access
+run.vnc: $(OBJDIR)/boot.img
+	qemu-system-x86_64 -d cpu_reset -cpu 486 -fda $< -net none -no-kvm -monitor stdio -serial pty -vnc 0.0.0.0:9 -k en-us
