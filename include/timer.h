@@ -7,16 +7,16 @@
 #define UNUSE   0
 #define USED    1
 
-typedef struct TIMER {
-    struct TIMER *next;
+typedef struct timer{
+    struct timer *next;
     unsigned int timeout, flags;
     int data;
 }timer;
 
-typedef struct TIMER_POOL {
-    unsigned int count, next;
-    struct TIMER *current;
-    struct TIMER pool[MAX_TIMER];
+typedef struct timer_zone{
+    unsigned int count, next; /*next means timeout*/
+    timer *current;
+    timer pool[MAX_TIMER];
 }timer_zone;
 void init_pit(void);
 timer* timer_alloc(void);
