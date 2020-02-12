@@ -25,6 +25,7 @@ extern struct bitmap_font font;
 unsigned int memtest(unsigned int start, unsigned int end);
 
 #define SYSSEG  0x1000
+#define INITSEG  0x0050
 #define MEMMAN_ADDR (char *)((0x003c0000) - (SYSSEG << 4))
 #define VRAM_ADDR (unsigned char *)((0xa0000)-(SYSSEG << 4))
 #define COL8_000000     0
@@ -43,7 +44,8 @@ unsigned int memtest(unsigned int start, unsigned int end);
 #define COL8_840084     13
 #define COL8_008484     14
 #define COL8_848484     15
-#define MEM_MAP_ADDR (char *)((0x00078004)-(SYSSEG << 4))
+#define E820_OFFSET     0x1004
+#define MEM_MAP_ADDR (char *)((INITSEG << 4)+(E820_OFFSET)-(SYSSEG << 4))
 
 struct SEGMENT_DESCRIPTOR {
 	short limit_low, base_low;

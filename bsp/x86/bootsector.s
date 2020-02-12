@@ -3,7 +3,7 @@
 
 CYLS = 10
 BOOTSEG =   0x07C0
-INITSEG =   0x7000
+INITSEG =   0x0050
 SYSSEG  =   0x1000
 .code16
 .section ".bstext", "ax"
@@ -21,7 +21,7 @@ main_start:
 	xorw	%sp, %sp
 
     
-#move BootSector to 0x9000(INITSEG)
+#move BootSector to INITSEG
 #
     movw $BOOTSEG, %ax
     movw %ax,   %ds
@@ -181,6 +181,8 @@ fin:
     mov $0x13,%al
     int $0x10
 #
+#Jump into INITSEG, rather than SYSSEG, because
+#We want to store e820 at $INITSEG:$E820_OFFSET. Our SYSSEG(0x1000) as real start
     ljmp $INITSEG, $lowlevel_init
     hlt
 
