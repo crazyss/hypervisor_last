@@ -417,7 +417,7 @@ void kernelstart(char *arg)
     enable_mouse();
 
     init_page_directory();
-    loadPageDirectory((long)page_directory + 0x10000);
+    loadPageDirectory((long)page_directory + (SYSSEG << 4));
     drawing_desktop();
     drawing_mem_map();
 
