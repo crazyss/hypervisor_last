@@ -2,13 +2,13 @@
 #define FIFO_FULL 1
 
 struct fifo {
-	unsigned char *buf;
-	unsigned char head;
-	unsigned char tail;
-	unsigned char len;
-	unsigned char free;
-	unsigned char flag;
-	unsigned char size;
+    unsigned char *buf;
+    unsigned char head;
+    unsigned char tail;
+    unsigned char len;
+    unsigned char free;
+    unsigned char flag;
+    unsigned char size;
 };
 
 void fifo_init(struct fifo *fifo, int size, unsigned char *buf);

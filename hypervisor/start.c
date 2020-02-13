@@ -141,7 +141,7 @@ static void drawing_desktop()
     //    putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 2 Failed");
     //}
     //sprintf(buf,"MEMORY %d MB. %dMB Heap Free.", memtotal / (1024*1024), memman_total(memman) / (1024*1024));
-    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 0x13!!!");
+    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 19!!!");
 
 }
 
@@ -422,7 +422,7 @@ void kernelstart(char *arg)
     drawing_mem_map();
 
     io_stihlt();
-    write_string_serial("Hackweek18\r\n");
+    write_string_serial("Hackweek19\r\n");
     enablePaging();
     while(1) {
         io_cli();
