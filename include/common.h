@@ -4,19 +4,19 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-void io_hlt(void); 
-void io_cli(void); 
-void io_sti(void); 
-void io_stihlt(void); 
-void io_out8(int port, int data); 
-int io_in8(int port); 
-int io_load_eflags(void); 
-void io_store_eflags(int eflags); 
+void io_hlt(void);
+void io_cli(void);
+void io_sti(void);
+void io_stihlt(void);
+void io_out8(int port, int data);
+int io_in8(int port);
+int io_load_eflags(void);
+void io_store_eflags(int eflags);
 int load_cr0(void);
 int store_cr0(int cr0);
 
 
-void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1); 
+void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
 
 void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *font);
 void putfont8_string(unsigned char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, unsigned char * string);
@@ -46,15 +46,15 @@ unsigned int memtest(unsigned int start, unsigned int end);
 #define MEM_MAP_ADDR (char *)((0x00078004)-(SYSSEG << 4))
 
 struct SEGMENT_DESCRIPTOR {
-	short limit_low, base_low;
-	char base_mid, access_right;
-	char limit_high, base_high;
+    short limit_low, base_low;
+    char base_mid, access_right;
+    char limit_high, base_high;
 };
 
 struct GATE_DESCRIPTOR {
-	short offset_low, selector;
-	char dw_count, access_right;
-	short offset_high;
+    short offset_low, selector;
+    char dw_count, access_right;
+    short offset_high;
 };
 
 void load_gdtr(int limit, int addr);
@@ -64,25 +64,25 @@ void load_idtr(int limit, int addr);
 
 #define PIC0    0x20
 #define PIC1    0xa0
-#define PIC0_OCW1				PIC0+1
-#define PIC0_OCW2				PIC0
-#define PIC1_OCW1    		PIC1+1
-#define PIC1_OCW2    		PIC1
-#define PIC0_IMR				PIC0_OCW1
-#define PIC1_IMR				PIC1_OCW1
-#define PIC0_ICW1				PIC0
-#define PIC1_ICW1				PIC1
-#define PIC0_ICW2				PIC0+1
-#define PIC1_ICW2				PIC1+1
-#define PIC0_ICW3				PIC0+1
-#define PIC1_ICW3				PIC1+1
-#define PIC0_ICW4				PIC0+1
-#define PIC1_ICW4				PIC1+1
+#define PIC0_OCW1               PIC0+1
+#define PIC0_OCW2               PIC0
+#define PIC1_OCW1           PIC1+1
+#define PIC1_OCW2           PIC1
+#define PIC0_IMR                PIC0_OCW1
+#define PIC1_IMR                PIC1_OCW1
+#define PIC0_ICW1               PIC0
+#define PIC1_ICW1               PIC1
+#define PIC0_ICW2               PIC0+1
+#define PIC1_ICW2               PIC1+1
+#define PIC0_ICW3               PIC0+1
+#define PIC1_ICW3               PIC1+1
+#define PIC0_ICW4               PIC0+1
+#define PIC1_ICW4               PIC1+1
 #define PIC0_COMMAND    PIC0
 #define PIC0_DATA       (PIC0+1)
 #define PIC1_COMMAND    PIC1
 #define PIC1_DATA       (PIC1+1)
-#define PIC_EOI		0x20	/* End-of-interrupt command code */
+#define PIC_EOI     0x20    /* End-of-interrupt command code */
 
 /*GDT / IDT data*/
 
@@ -105,10 +105,10 @@ extern void inthandler2c(void);
 extern void inthandler24(void);
 
 struct mouse_info {
-	char phase;
-	unsigned char buf[3];
-	int x, y, btn;
-	int mx, my;
+    char phase;
+    unsigned char buf[3];
+    int x, y, btn;
+    int mx, my;
 };
 void draw_mouse_on_screen(struct mouse_info *);
 void init_mouse_cursor8(char *, char);
