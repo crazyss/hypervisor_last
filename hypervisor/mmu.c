@@ -7,7 +7,7 @@ unsigned int page_tables[MAX_PAGE_PDE][1024] __attribute__((aligned(4096)));
 void init_page_directory() {
     int i;
     int j;
-    for(i = 0; i < MAX_PAGE_PDE; i++)
+    for(i = 0; i < 1024; i++)
     {
         // This sets the following flags to the pages:
         //   Supervisor: Only kernel-mode can access them
