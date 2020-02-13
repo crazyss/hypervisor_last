@@ -84,6 +84,11 @@ void load_idtr(int limit, int addr);
 #define PIC1_DATA       (PIC1+1)
 #define PIC_EOI     0x20    /* End-of-interrupt command code */
 
+/* PIT chip I/O port*/
+#define PIT_CH0     0x40
+#define PIT_CMD     0x43
+
+
 /*GDT / IDT data*/
 
 #define ADR_IDT         0x0026f800
@@ -99,10 +104,11 @@ void load_idtr(int limit, int addr);
 /*Serial PORT*/
 #define PORT 0x3F8
 
+extern void inthandler20(void);
 extern void inthandler21(void);
+extern void inthandler24(void);
 extern void inthandler27(void);
 extern void inthandler2c(void);
-extern void inthandler24(void);
 
 struct mouse_info {
     char phase;
