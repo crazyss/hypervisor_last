@@ -19,8 +19,15 @@ void init_page_directory() {
     for (j=0; j<MAX_PAGE_PDE; j++) {
         for(i = 0; i < 1024; i++)
         {
-            // As the address is page aligned, it will always leave 12 bits zeroed.
-            // Those bits are used by the attributes ;)
+            /*
+             * We setup 1:1 memory mapping for the easy. 
+             * VA = PA.
+             */
+            // (i * 0x1000):As the address is page aligned, it will always leave 12 bits zeroed.
+            // (3):Those bits are used by the attributes ;)
+            // (j*0x400000):As 4MiB mapping size for one of entrys of page_directory.
+            //              For the first page_table, it need 0x0001000, 0x0002000....0x03ff000.
+            //              For the second page_table, it needs start at 0x0400000, 0x0401000.
             page_tables[j][i] = ((i * 0x1000) + (j * 0x400000)) | 3; // attributes: supervisor level, read/write, present.
         }
         page_directory[j]=(unsigned int)page_tables[j] + (SYSSEG << 4) | 3;
