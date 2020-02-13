@@ -2,6 +2,7 @@
 #include "fifo8.h"
 #include "serial.h"
 #include "mm.h"
+#include "mmu.h"
 
 #define PORT_KEYDAT             0x0060
 #define PORT_KEYSTA             0x0064
@@ -398,6 +399,7 @@ void kernelstart(char *arg)
     unsigned char serialbuffer[32];
     unsigned char james_global;
 
+
     init_palette();
 
     init_gdtidt();
@@ -414,11 +416,14 @@ void kernelstart(char *arg)
 
     enable_mouse();
 
+    init_page_directory();
+    loadPageDirectory((long)page_directory + (SYSSEG << 4));
     drawing_desktop();
     drawing_mem_map();
 
     io_stihlt();
     write_string_serial("Hackweek18\r\n");
+    enablePaging();
     while(1) {
         io_cli();
         if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0 && fifo_status(&serial_fifo) <= 0)    {
