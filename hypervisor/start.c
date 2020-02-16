@@ -130,7 +130,7 @@ static void drawing_desktop()
     boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize -  3, xsize -  4, ysize -  3);
     boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
 
-    memtotal=memtest(0x400000, 0xbfffffff);
+    //memtotal=memtest(0x400000, 0xbfffffff);
     ret = memman_free((struct MEMMAN*)(MEMMAN_ADDR), 0x00100000, 0x00100000);
     if (ret != -1) {
         putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 1 Failed");

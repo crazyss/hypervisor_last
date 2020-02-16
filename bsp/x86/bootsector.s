@@ -54,7 +54,7 @@ next:
 
 
 #move BootSector/lowlevel to 0x10000(SYSSEG)
-#igd table in lowlevel will take this address as code seg
+#gdt table in lowlevel will take this address as base address
     movw $BOOTSEG, %ax
     movw %ax,   %ds
     movw $SYSSEG, %ax
