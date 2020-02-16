@@ -26,4 +26,9 @@ upstream development the newest feature about HV.
   `make run.x86`
 ~~~~
 
-
+* Debug
+~~~~
+  Plesae take a look here, it will help you use `qemu` console to monior the registers of VM.
+  so that help you debug some of crash issues.
+  `https://en.wikibooks.org/wiki/QEMU/Monitor`
+~~~~

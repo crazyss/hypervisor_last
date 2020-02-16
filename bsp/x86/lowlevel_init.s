@@ -108,7 +108,7 @@ get_next:
     cmp $0, %ebx /*ebx=0 means no other entry*/
     jnz get_next
 #for debug
-#    hlt
+    #hlt
 
 #Inital Serial Device 1
 #com1 at 0x3F8

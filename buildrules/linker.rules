@@ -13,12 +13,14 @@ $(OBJDIR)/boot.img: $(OBJDIR)/helloos.bin
 	dd if=$< of=$@ bs=512 count=1024
 run.x86.4mb: $(OBJDIR)/boot.img
 	qemu-kvm -cpu 486 -m 4 -fda $< -net none -no-kvm
+run.x86.32mb: $(OBJDIR)/boot.img
+	qemu-kvm -cpu 486 -m 32 -fda $< -net none -no-kvm -serial pty
 run.x86.256mb: $(OBJDIR)/boot.img
 	qemu-kvm -cpu 486 -m 256 -fda $< -net none -no-kvm -serial pty
 run.x86: $(OBJDIR)/boot.img
 	qemu-kvm -cpu 486 -fda $< -net none -no-kvm -serial pty
 run.x86.debug.32m: $(OBJDIR)/boot.img
-	qemu-system-x86_64 -cpu 486 -m 32 -fda $< -net none -no-kvm -monitor stdio
+	qemu-system-x86_64 -d cpu_reset -cpu 486 -m 32 -fda $< -net none -no-kvm -monitor stdio
 run.x86.debug: $(OBJDIR)/boot.img
 	qemu-system-x86_64 -d cpu_reset -cpu 486 -fda $< -net none -no-kvm -monitor stdio -serial pty
 run.x86.debug.gdb: $(OBJDIR)/boot.img

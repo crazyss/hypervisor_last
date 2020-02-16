@@ -2,6 +2,7 @@
 #include "fifo8.h"
 #include "serial.h"
 #include "mm.h"
+#include "mmu.h"
 
 #define PORT_KEYDAT             0x0060
 #define PORT_KEYSTA             0x0064
@@ -13,6 +14,11 @@
 #define MOUSECMD_ENABLE         0xf4
 
 extern char mcursor[256];
+
+int free_memory[MAX_FREE_MEM_BLOCK][2] = { 0 };
+int max_free_mem = 0;
+unsigned char mem_map [ PAGING_PAGES ] = {0, };
+int max_paging_mem = 0;
 
 struct wjn {
 	int t;
@@ -130,18 +136,31 @@ static void drawing_desktop()
     boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize -  3, xsize -  4, ysize -  3);
     boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
 
-    //memtotal=memtest(0x400000, 0xbfffffff);
-    ret = memman_free((struct MEMMAN*)(MEMMAN_ADDR), 0x00100000, 0x00100000);
-    if (ret != -1) {
-        putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 1 Failed");
-    }
-    //ret = memman_free(memman, 0x00400000, memtotal - 0x00400000);
-    //if (ret != 0) {
-    //    putfont8_string(vram,xsize, 28, 48, COL8_FFFFFF,font.Bitmap , "Memman Free 2 Failed");
-    //}
-    //sprintf(buf,"MEMORY %d MB. %dMB Heap Free.", memtotal / (1024*1024), memman_total(memman) / (1024*1024));
-    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 0x13!!!");
+    putfont8_string(vram,xsize, 8, 8, COL8_FFFFFF,font.Bitmap , "Hack Week 19!!!");
 
+}
+
+void mem_init()
+{
+    int i;
+    for (i = 0; i < PAGING_PAGES; i++)
+        mem_map[i] = USED; // means used 
+}
+
+//Fix me, maybe some potential issue
+void mem_map_init()
+{
+    mem_init();
+    unsigned int i,j;
+    unsigned int start_mem, len_mem;
+    for (i = 0;free_memory[i][1] == 0; i++) {
+        start_mem = free_memory[i][0];
+        len_mem = free_memory[i][1];
+        j = MAP_NR(start_mem); 
+        len_mem >> 12;
+        while (len_mem-- == 0)
+            mem_map[j++] = 0;
+    }
 }
 
 void drawing_mem_map()
@@ -151,6 +170,8 @@ void drawing_mem_map()
 	xsize = 320;
 	ysize = 200;
 	char buf[50];
+    int i = 0;
+
 	//print memory map
 	struct MEMMAP *memmap = (struct MEMMAP *)(MEM_MAP_ADDR);
 	int pos = 20;
@@ -162,15 +183,35 @@ void drawing_mem_map()
 		putfont8_string(vram, xsize, 150, pos, COL8_FFFFFF, font.Bitmap,
 				buf);
 		if (memmap->type == 1) {
+            free_memory[i][0] = memmap->base;
+            free_memory[i][1] = memmap->length;
+            //fix me, we need update this func
+            //memtest(memmap->base, memmap->length);
+            max_free_mem = max_free_mem + memmap->length;
+            i++;
 			sprintf(buf, "%s", "free");
 		} else {
 			sprintf(buf, "%s", "reserve");
 		}
-		putfont8_string(vram, xsize, 270, pos, COL8_FFFFFF, font.Bitmap,
-				buf);
-		memmap++;
-		pos = pos + 16;
+            putfont8_string(vram, xsize, 270, pos, COL8_FFFFFF, font.Bitmap,
+                    buf);
+            memmap++;
+            pos = pos + 16;
 	}
+    mem_map_init();
+    // find max paging size 
+    for (i = 0; free_memory[i][1] != 0; i++) {}
+    max_paging_mem = free_memory[i-1][0] + free_memory[i-1][1];
+
+    sprintf(buf, "total free:%X", max_free_mem);
+    putfont8_string(vram, xsize, 8, pos, COL8_FFFFFF, font.Bitmap,
+            buf);
+    sprintf(buf, "total free page:%X", max_free_mem>>12);
+    putfont8_string(vram, xsize, 8, pos + 16, COL8_FFFFFF, font.Bitmap,
+            buf);
+    sprintf(buf, "total paging size:%X", max_paging_mem);
+    putfont8_string(vram, xsize, 8, pos + 32, COL8_FFFFFF, font.Bitmap,
+            buf);
 }
 
 static void wait_KBC_sendready(void)
@@ -398,6 +439,7 @@ void kernelstart(char *arg)
     unsigned char serialbuffer[32];
     unsigned char james_global;
 
+
     init_palette();
 
     init_gdtidt();
@@ -414,11 +456,14 @@ void kernelstart(char *arg)
 
     enable_mouse();
 
+    init_page_directory();
+    loadPageDirectory((long)page_directory + (SYSSEG << 4));
     drawing_desktop();
     drawing_mem_map();
 
     io_stihlt();
-    write_string_serial("Hackweek18\r\n");
+    write_string_serial("Hackweek19\r\n");
+    enablePaging();
     while(1) {
         io_cli();
         if (fifo_status(&key_fifo) <= 0 && fifo_status(&mouse_fifo) <= 0 && fifo_status(&serial_fifo) <= 0)    {
