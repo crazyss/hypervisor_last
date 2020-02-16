@@ -4,13 +4,15 @@
 #define EFLAGS_AC_BIT       0x00040000
 #define CR0_CACHE_DISABLE   0x60000000
 
-unsigned int memtest(unsigned int start, unsigned int end);
+unsigned int memtest(unsigned int start, unsigned int len);
 unsigned int memtest_sub(unsigned int start, unsigned int end);
 
-unsigned int memtest(unsigned int start, unsigned int end)
+unsigned int memtest(unsigned int start, unsigned int len)
 {
 	char flg486 = 0;
 	unsigned int eflg, cr0, i;
+    unsigned int end = 0;
+    end = start + len -1;
 
 	eflg = io_load_eflags();
 	eflg |= EFLAGS_AC_BIT;

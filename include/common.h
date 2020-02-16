@@ -22,7 +22,7 @@ void putfont8(char *vram, int xsize, int x, int y, char c, const unsigned char *
 void putfont8_string(unsigned char *vram, int xsize, int x, int y, char color,const unsigned char *font_bitmap, unsigned char * string);
 
 extern struct bitmap_font font;
-unsigned int memtest(unsigned int start, unsigned int end);
+unsigned int memtest(unsigned int start, unsigned int len);
 
 #define SYSSEG  0x1000
 #define MEMMAN_ADDR (char *)((0x003c0000) - (SYSSEG << 4))
