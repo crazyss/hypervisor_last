@@ -81,7 +81,7 @@ _lowlevel_init:
     nop;
     nop;
     
-#Get memory map and store memroy table start from  0x00098004, each entry has 20bytes data but
+#Get memory map and store memroy table start from  $INITSEG:1004, each entry has 20bytes data but
 #currently we reserve 0x20 bytes for each entry
 #Each entry has :
 #First uint64_t = Base address
@@ -93,7 +93,8 @@ _lowlevel_init:
 #   Type 4: ACPI NVS memory
 #   Type 5: Area containing bad memory
 #Set register base https://wiki.osdev.org/Detecting_Memory_(x86)
-    mov $0x8004, %di
+	E820_OFFSET=0x1004
+    mov $E820_OFFSET, %di
     xor %ebx, %ebx
     mov $0x0534D4150, %edx
     mov $0xe820,%eax
@@ -107,8 +108,6 @@ get_next:
     int $0x15
     cmp $0, %ebx /*ebx=0 means no other entry*/
     jnz get_next
-#for debug
-#    hlt
 
 #Inital Serial Device 1
 #com1 at 0x3F8
@@ -185,7 +184,7 @@ fin:
     hlt
     jmp fin
 
-INITSEG = 0x7000
+INITSEG  = 0x0050
 
 idt_ptr:
     .word   0       /* limit */
