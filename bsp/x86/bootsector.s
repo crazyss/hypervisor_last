@@ -3,11 +3,12 @@
 
 CYLS = 10
 BOOTSEG =   0x07C0
-INITSEG =   0x7000
 SYSSEG  =   0x1000
 .code16
 .section ".bstext", "ax"
 start:
+#bios will load bootsector into 0x07c0:0000, then we using ljmp
+#to jump to 0x07c0:0000 to start our code
 #machine code ea 05 00 c0 07
 #ljmp   $0x7c0,$0x5 (Through objdump -D -Mi8086)
 #cs will be set to 0x7c0
@@ -19,33 +20,13 @@ main_start:
 	movw	%ax, %es
 	movw	%ax, %ss
 	xorw	%sp, %sp
-
     
-#move BootSector to 0x9000(INITSEG)
-#
-    movw $BOOTSEG, %ax
-    movw %ax,   %ds
-    movw $INITSEG, %ax
-    movw %ax,   %es
-    movw $256,  %cx
-    xorw %si,   %si
-    xorw %di,   %di
-    rep;
-    movsw
-    
-    ljmp $INITSEG, $goto_init_seg
-goto_init_seg:
-    movw %cs, %ax
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %ss
-
     movw $0xFBFF, %sp
 
 read_disk:
-#read lowlevel_init data to INITSEG RAM from Disk
+#load lowlevel_init after BOOTSEG RAM from Disk
 #the early GDT store on the area of lowlevel code.
-    movw $INITSEG, %ax
+    movw $BOOTSEG, %ax
     movw %ax,%es
     movb $0, %ch #cylinder
     movb $2, %cl #sector
@@ -65,18 +46,16 @@ retry:
     add  $1, %si    #counter + 1
     cmp  $5, %si
     jae  error
-#
+
     movb $0, %ah    #reset drive
     movb $0, %dl
     int $0x13
-    jmp retry 
-#
-#
 next:
 
 
 #move BootSector/lowlevel to 0x10000(SYSSEG)
-    movw $INITSEG, %ax
+#gdt table in lowlevel will take this address as base address
+    movw $BOOTSEG, %ax
     movw %ax,   %ds
     movw $SYSSEG, %ax
     movw %ax,   %es
@@ -181,7 +160,8 @@ fin:
     mov $0x13,%al
     int $0x10
 #
-    ljmp $INITSEG, $lowlevel_init
+    #jmp lowlevel_init
+    ljmp $SYSSEG, $lowlevel_init
     hlt
 
     jmp fin

@@ -148,13 +148,19 @@ void mem_init()
 }
 
 //Fix me, maybe some potential issue
-void mem_map_init(unsigned int start_mem, unsigned int len_mem)
+void mem_map_init()
 {
-    unsigned int i;
-    i = MAP_NR(start_mem); 
-    len_mem >> 12;
-    while (len_mem-- == 0)
-        mem_map[i++] = 0;
+    mem_init();
+    unsigned int i,j;
+    unsigned int start_mem, len_mem;
+    for (i = 0;free_memory[i][1] == 0; i++) {
+        start_mem = free_memory[i][0];
+        len_mem = free_memory[i][1];
+        j = MAP_NR(start_mem); 
+        len_mem >> 12;
+        while (len_mem-- == 0)
+            mem_map[j++] = 0;
+    }
 }
 
 void drawing_mem_map()
@@ -169,7 +175,6 @@ void drawing_mem_map()
 	//print memory map
 	struct MEMMAP *memmap = (struct MEMMAP *)(MEM_MAP_ADDR);
 	int pos = 20;
-    mem_init();
 	for (; memmap->type != 0;) {
 		sprintf(buf, "base:%X", memmap->base);
 		putfont8_string(vram, xsize, 8, pos, COL8_FFFFFF, font.Bitmap,
@@ -182,7 +187,6 @@ void drawing_mem_map()
             free_memory[i][1] = memmap->length;
             //fix me, we need update this func
             //memtest(memmap->base, memmap->length);
-            mem_map_init(memmap->base, memmap->length);
             max_free_mem = max_free_mem + memmap->length;
             i++;
 			sprintf(buf, "%s", "free");
@@ -194,6 +198,7 @@ void drawing_mem_map()
             memmap++;
             pos = pos + 16;
 	}
+    mem_map_init();
     // find max paging size 
     for (i = 0; free_memory[i][1] != 0; i++) {}
     max_paging_mem = free_memory[i-1][0] + free_memory[i-1][1];
