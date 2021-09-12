@@ -1,8 +1,6 @@
 #ifndef __COMMON_H
 #define __COMMON_H
 #include "font.h"
-#include <stdio.h>
-#include <stdarg.h>
 
 void io_hlt(void);
 void io_cli(void);
